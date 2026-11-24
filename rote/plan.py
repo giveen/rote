@@ -42,14 +42,35 @@ PLAN_SCHEMA: dict[str, Any] = {
                     "target": {"type": "string"},
                     "value": {"type": ["string", "null"]},
                     "note": {"type": "string"},
+                    "scope": {"type": "string", "enum": ["each_row", "once"]},
                 },
-                "required": ["action", "target", "value", "note"],
+                "required": ["action", "target", "value", "note", "scope"],
                 "additionalProperties": False,
             },
         },
+        # Strict schemas cannot describe a free-form object, so a row is a list of
+        # explicit field/value cells. It also reads better in the report.
         "rows": {
             "type": "array",
-            "items": {"type": "object", "additionalProperties": {"type": "string"}},
+            "items": {
+                "type": "object",
+                "properties": {
+                    "cells": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "field": {"type": "string"},
+                                "value": {"type": "string"},
+                            },
+                            "required": ["field", "value"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
+                "required": ["cells"],
+                "additionalProperties": False,
+            },
         },
         "expected_effect": {"type": "string"},
     },
@@ -64,6 +85,7 @@ class Step:
     target: str
     value: str | None = None
     note: str = ""
+    scope: str = "each_row"      # each_row repeats per data row; once happens at the end
 
     def matches(self, other: "Step") -> bool:
         """Same intent, allowing for whitespace and case drift in labels."""
@@ -88,9 +110,11 @@ class Plan:
         return cls(
             app=d.get("app", ""),
             goal=d.get("goal", ""),
-            steps=[Step(s["action"], s["target"], s.get("value"), s.get("note", ""))
+            steps=[Step(s["action"], s["target"], s.get("value"), s.get("note", ""),
+                        s.get("scope", "each_row"))
                    for s in d.get("steps", [])],
-            rows=d.get("rows", []),
+            rows=[{c["field"]: c["value"] for c in row.get("cells", [])}
+                  for row in d.get("rows", [])],
             fields=d.get("fields", []),
             expected_effect=d.get("expected_effect", ""),
         )
@@ -101,9 +125,12 @@ class Plan:
 
     def to_dict(self) -> dict:
         return {"app": self.app, "goal": self.goal,
-                "fields": self.fields, "rows": self.rows,
+                "fields": self.fields,
+                "rows": [{"cells": [{"field": k, "value": v} for k, v in row.items()]}
+                         for row in self.rows],
                 "steps": [{"action": s.action, "target": s.target,
-                           "value": s.value, "note": s.note} for s in self.steps],
+                           "value": s.value, "note": s.note, "scope": s.scope}
+                          for s in self.steps],
                 "expected_effect": self.expected_effect}
 
     @property

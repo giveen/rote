@@ -1,0 +1,120 @@
+{
+  "name": "intake",
+  "url": "http://127.0.0.1:8765/app.html",
+  "seconds": 10.6,
+  "steps": [
+    {
+      "action": "type",
+      "target": "SKU",
+      "value": "BRK-2041"
+    },
+    {
+      "action": "type",
+      "target": "Description",
+      "value": "Brake pad set, front"
+    },
+    {
+      "action": "type",
+      "target": "Quantity",
+      "value": "12"
+    },
+    {
+      "action": "type",
+      "target": "Unit cost",
+      "value": "18.40"
+    },
+    {
+      "action": "select",
+      "target": "Supplier",
+      "value": "Northwind Supply"
+    },
+    {
+      "action": "select",
+      "target": "Location",
+      "value": "Aisle 4 \u00b7 Bay 2"
+    },
+    {
+      "action": "click",
+      "target": "Add line",
+      "value": null
+    },
+    {
+      "action": "type",
+      "target": "SKU",
+      "value": "FLT-1180"
+    },
+    {
+      "action": "type",
+      "target": "Description",
+      "value": "Oil filter, spin-on"
+    },
+    {
+      "action": "type",
+      "target": "Quantity",
+      "value": "40"
+    },
+    {
+      "action": "type",
+      "target": "Unit cost",
+      "value": "6.25"
+    },
+    {
+      "action": "select",
+      "target": "Supplier",
+      "value": "Bergen Parts"
+    },
+    {
+      "action": "select",
+      "target": "Location",
+      "value": "Aisle 7 \u00b7 Bay 1"
+    },
+    {
+      "action": "click",
+      "target": "Add line",
+      "value": null
+    },
+    {
+      "action": "submit",
+      "target": "Submit intake",
+      "value": null
+    }
+  ],
+  "rows": [
+    {
+      "sku": "BRK-2041",
+      "description": "Brake pad set, front",
+      "quantity": "12",
+      "unit_cost": "18.40",
+      "supplier": "Northwind Supply",
+      "location": "Aisle 4 \u00b7 Bay 2"
+    },
+    {
+      "sku": "FLT-1180",
+      "description": "Oil filter, spin-on",
+      "quantity": "40",
+      "unit_cost": "6.25",
+      "supplier": "Bergen Parts",
+      "location": "Aisle 7 \u00b7 Bay 1"
+    }
+  ],
+  "end_state": {
+    "lines": [
+      {
+        "sku": "BRK-2041",
+        "desc": "Brake pad set, front",
+        "qty": "12",
+        "cost": "18.40",
+        "supplier": "Northwind Supply",
+        "location": "Aisle 4 \u00b7 Bay 2"
+      },
+      {
+        "sku": "FLT-1180",
+        "desc": "Oil filter, spin-on",
+        "qty": "40",
+        "cost": "6.25",
+        "supplier": "Bergen Parts",
+        "location": "Aisle 7 \u00b7 Bay 1"
+      }
+    ]
+  }
+}
