@@ -29,6 +29,9 @@ lower_snake_case name of the field. If the task was performed once, there is one
 literal text from the recording. For clicks and submits, `value` is null.
 - `fields` lists every control the person touched, with the kind of control it is.
 - `expected_effect` is what is visibly different once the task has succeeded.
+- Accessible names change while a page is in use: a cart link reads "Cart, empty" before an
+  item is added and "Cart, 1 item" after. Name such a control by its stable part ("Cart"),
+  never by the part that moves.
 - Only describe actions the recording supports. If something is ambiguous, say so in the \
 step's `note` instead of guessing silently.
 

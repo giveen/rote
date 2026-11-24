@@ -2,7 +2,7 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/sauce.mp4",
   "plan": {
     "app": "Swag Labs",
-    "goal": "Log in, add the Sauce Labs Backpack to the cart, and complete checkout.",
+    "goal": "Log in, add the Sauce Labs Backpack to the cart, and complete checkout with the entered information.",
     "fields": [
       {
         "control": "text",
@@ -26,7 +26,7 @@
       },
       {
         "control": "text",
-        "example": "21037",
+        "example": "90210",
         "label": "Zip/Postal Code"
       }
     ],
@@ -51,7 +51,7 @@
           },
           {
             "field": "zip_postal_code",
-            "value": "21037"
+            "value": "90210"
           }
         ]
       }
@@ -61,88 +61,85 @@
         "action": "type",
         "target": "Username",
         "value": "standard_user",
-        "note": "Username field on the login form; the accepted usernames are listed below the form.",
+        "note": "Enter the username on the login form.",
         "scope": "once"
       },
       {
         "action": "type",
         "target": "Password",
         "value": "secret_sauce",
-        "note": "Password field is masked; the value is the password shown on the login page for all accepted users.",
+        "note": "Enter the password on the login form.",
         "scope": "once"
       },
       {
         "action": "click",
         "target": "Login",
         "value": null,
-        "note": "Logs in and opens the Products page.",
+        "note": "Submit the login form.",
         "scope": "once"
-      },
-      {
-        "action": "click",
-        "target": "Sauce Labs Backpack",
-        "value": null,
-        "note": "Opens the Sauce Labs Backpack details page, where the Add to cart button is unique to that product.",
-        "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Add to cart",
         "value": null,
-        "note": "Use the 'Add to cart' button for the Sauce Labs Backpack ($29.99) on its details page. The cart badge changes to 1.",
+        "note": "Click the button for the Sauce Labs Backpack ($29.99), the first product in the list.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Cart",
         "value": null,
-        "note": "Cart link at the top right of the page; opens the 'Your Cart' page.",
+        "note": "Click the top-right cart icon; its badge changes to show 1 item after adding.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Checkout",
         "value": null,
-        "note": "Opens 'Checkout: Your Information'.",
+        "note": "Proceed from the cart to checkout.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "First Name",
         "value": "{first_name}",
-        "note": "First of the three fields in the 'Your Information' form.",
+        "note": "Enter the first name on Checkout: Your Information.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Last Name",
         "value": "{last_name}",
-        "note": "Second field in the 'Your Information' form.",
+        "note": "Enter the last name on Checkout: Your Information.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Zip/Postal Code",
-        "value": "{zip}",
-        "note": "Third field in the 'Your Information' form; the exact digits are small/ambiguous in the recording and are transcribed as best visible, so verify the zip code.",
+        "value": "{zip_postal_code}",
+        "note": "Enter the zip/postal code on Checkout: Your Information.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Continue",
         "value": null,
-        "note": "Opens 'Checkout: Overview' showing the item, payment and shipping information, and price total.",
+        "note": "Advance from Your Information to the order overview.",
         "scope": "each_row"
       },
       {
-        "action": "submit",
+        "action": "click",
         "target": "Finish",
         "value": null,
-        "note": "Places the order and opens the confirmation page.",
-        "scope": "once"
+        "note": "On the order overview, place the order.",
+        "scope": "each_row"
       }
     ],
-    "expected_effect": "The 'Checkout: Complete!' page is displayed with a green checkmark and the message 'Thank you for your order!' and a note that the order has been dispatched."
+    "repeat": {
+      "first": 4,
+      "last": 11
+    },
+    "expected_effect": "Checkout: Complete page displays \"Thank you for your order!\" for the Sauce Labs Backpack, with Price Total $32.39."
   },
   "script": "results/learn_sauce/sauce.py",
   "attempts": [
@@ -153,64 +150,66 @@
         {
           "name": "script runs on fresh data",
           "ok": false,
-          "detail": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip']\""
+          "detail": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\""
         },
         {
-          "name": "every value reached the page",
+          "name": "every value was accepted by its control",
           "ok": false,
-          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip='20850'"
+          "detail": "at least one control rejected what was typed"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip_postal_code='20850'"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": false,
+          "detail": "expected something like 'Checkout: Complete page displays \"Thank you for your order!\" for the Sauce Labs Backpack, with Price Total $32.39.'"
         }
       ],
-      "error": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip']\"",
-      "cost": 0.0020641319999999998
+      "error": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\"",
+      "cost": 0.001466996
     },
     {
       "attempt": 1,
-      "passed": false,
+      "passed": true,
       "checks": [
         {
           "name": "script runs on fresh data",
-          "ok": false,
-          "detail": "LookupError: no button named 'Add to cart' on https://www.saucedemo.com/inventory.html"
+          "ok": true,
+          "detail": "1 row(s) through sauce.py"
         },
         {
-          "name": "every value reached the page",
-          "ok": false,
-          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip='20850'"
-        }
-      ],
-      "error": "LookupError: no button named 'Add to cart' on https://www.saucedemo.com/inventory.html",
-      "cost": 0.008702344
-    },
-    {
-      "attempt": 2,
-      "passed": false,
-      "checks": [
-        {
-          "name": "script runs on fresh data",
-          "ok": false,
-          "detail": "LookupError: no button named 'Sauce Labs Backpack' on https://www.saucedemo.com/inventory.html"
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 3 values were typed and confirmed on screen"
         },
         {
-          "name": "every value reached the page",
-          "ok": false,
-          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip='20850'"
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
         }
       ],
-      "error": "LookupError: no button named 'Sauce Labs Backpack' on https://www.saucedemo.com/inventory.html",
-      "cost": 0.01683448
+      "error": null,
+      "cost": 0.00460672
     }
   ],
-  "passed": false,
+  "passed": true,
   "ledger": {
-    "calls": 3,
-    "spent_usd": 0.016834,
-    "input_tokens": 5559,
-    "cached_tokens": 3270,
-    "output_tokens": 33185,
-    "reasoning_tokens": 30775,
-    "cache_hit_pct": 58.8
+    "calls": 2,
+    "spent_usd": 0.004607,
+    "input_tokens": 3808,
+    "cached_tokens": 2480,
+    "output_tokens": 8928,
+    "reasoning_tokens": 7814,
+    "cache_hit_pct": 65.1
   },
-  "elapsed_s": 73.5,
+  "elapsed_s": 22.3,
   "fresh_data": true
 }

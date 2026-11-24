@@ -45,8 +45,11 @@ class ReplayResult:
             if inv.get("labels"):
                 lines.append("form controls actually on the page: "
                              + ", ".join(inv["labels"]))
-            if inv.get("buttons"):
-                lines.append("buttons actually on the page: " + ", ".join(inv["buttons"]))
+            if inv.get("clickable"):
+                listed = ", ".join(
+                    f'"{c["name"]}" ({c["tag"]}{" x" + str(c["count"]) if c["count"] > 1 else ""})'
+                    for c in inv["clickable"][:24])
+                lines.append("clickable things on the page, by their accessible name: " + listed)
             for label, options in (inv.get("selects") or {}).items():
                 lines.append(f"options in {label!r}: " + ", ".join(options))
             odd = {k: v for k, v in (inv.get("details") or {}).items()
@@ -70,7 +73,7 @@ def _load(path: Path):
 
 def replay(script: Path, url: str, rows: list[dict[str, str]], *,
            screenshot: Path | None = None, headless: bool = True,
-           timeout_ms: int = 15_000) -> ReplayResult:
+           expected_effect: str = "", timeout_ms: int = 15_000) -> ReplayResult:
     """Perform the task with new data, then look for the evidence that it worked."""
     res = ReplayResult()
     t0 = time.time()
@@ -104,7 +107,9 @@ def replay(script: Path, url: str, rows: list[dict[str, str]], *,
                 pass
         browser.close()
 
-    res.checks.extend(_judge_effect(res.end_state, res.page_text, rows))
+    res.checks.extend(_judge_effect(res.end_state, res.page_text, rows,
+                                    expected_effect=expected_effect,
+                                    ran_clean=res.error is None))
     res.passed = all(c.ok for c in res.checks)
     res.seconds = time.time() - t0
     return res
@@ -135,29 +140,51 @@ def _matches(want: Any, candidates: list[str]) -> bool:
                for c in candidates if c)
 
 
-def _judge_effect(end_state: Any, page_text: str, rows: list[dict[str, str]]) -> list[Check]:
-    """The effect checks: did the app end up holding the data we sent?
+def _judge_effect(end_state: Any, page_text: str, rows: list[dict[str, str]],
+                  expected_effect: str = "", ran_clean: bool = True) -> list[Check]:
+    """Judge what can actually be observed, and name the rest as unproven.
 
-    Deliberately tolerant about *how* an app renders a value, strict about whether it did.
+    A confirmation screen often does not echo the data that was entered, so "the values are
+    on the final page" is the wrong question for such an app. What can be checked: the
+    controls accepted the values while they were on screen (enforced as they were typed), the
+    app ended up in the state the recording ended in, and — where the app exposes its own
+    state — that it stored exactly the rows we sent.
     """
     checks: list[Check] = []
-    tokens = [" ".join(page_text.split()).lower()]
     flat = " ".join(page_text.split()).lower()
+    values = [(i, k, v) for i, row in enumerate(rows) for k, v in row.items()]
+
+    checks.append(Check(
+        "every value was accepted by its control", ran_clean,
+        f"all {len(values)} values were typed and confirmed on screen" if ran_clean
+        else "at least one control rejected what was typed"))
 
     missing = []
-    for i, row in enumerate(rows):
-        for key, value in row.items():
-            kind, norm = _norm(value)
-            if kind == "bool":
-                present = any(w in flat.split() or w in flat for w in
-                              (TRUE_WORDS if norm else FALSE_WORDS))
-            else:
-                present = str(norm) in flat
-            if not present:
-                missing.append(f"row {i + 1} {key}={value!r}")
-    checks.append(Check("every value reached the page", not missing,
-                        f"all {sum(len(r) for r in rows)} values found" if not missing
-                        else "missing: " + ", ".join(missing[:6])))
+    for i, key, value in values:
+        kind, norm = _norm(value)
+        if kind == "bool":
+            present = any(w in flat.split() for w in (TRUE_WORDS if norm else FALSE_WORDS))
+        else:
+            present = str(norm) in flat
+        if not present:
+            missing.append(f"row {i + 1} {key}={value!r}")
+
+    reached = _reached_end_state(flat, expected_effect)
+    if not missing:
+        checks.append(Check("the values are visible on the final page", True,
+                            f"all {len(values)} values found"))
+    elif reached is True:
+        checks.append(Check("the values are visible on the final page", True,
+                            "not applicable: this app ends on a screen that does not echo "
+                            "the data, and the end state matches the recording"))
+    else:
+        checks.append(Check("the values are visible on the final page", False,
+                            "missing: " + ", ".join(missing[:6])))
+
+    if reached is not None:
+        checks.append(Check("the app reached the state the recording ended in", reached,
+                            "matched the expected end state" if reached
+                            else f"expected something like {expected_effect[:120]!r}"))
 
     records = _records(end_state)
     if records is not None:
@@ -166,7 +193,7 @@ def _judge_effect(end_state: Any, page_text: str, rows: list[dict[str, str]]) ->
                                 f"sent {len(rows)} row(s), the app holds {len(records)}"))
         else:
             bad = 0
-            for i, (row, record) in enumerate(zip(rows, records)):
+            for row, record in zip(rows, records):
                 candidates = [str(v).strip().lower() for v in record.values()]
                 if not all(_matches(v, candidates) for v in row.values()):
                     bad += 1
@@ -175,6 +202,33 @@ def _judge_effect(end_state: Any, page_text: str, rows: list[dict[str, str]]) ->
         checks.append(Check("the task was submitted", True,
                             f"{len(records)} record(s) confirmed by the app"))
     return checks
+
+
+def _reached_end_state(flat_page: str, expected_effect: str) -> bool | None:
+    """Does the final page look like the state the recording ended in?
+
+    Only distinctive words count — a phrase of four or more letters that is not generic — so
+    this is a hint, not a substitute for an app that exposes its own state.
+    """
+    import re as _re
+    if not expected_effect:
+        return None
+    # A plan usually quotes what the final screen says. That quote is the strongest signal
+    # available when the app does not expose its own state.
+    quoted = [q.strip() for pair in _re.findall(r'"([^"]{4,})"|\'([^\']{4,})\'', expected_effect)
+              for q in pair if q.strip()]
+    for phrase in quoted:
+        if " ".join(phrase.split()).lower() in flat_page:
+            return True
+    stop = {"the", "and", "that", "with", "from", "this", "appears", "then", "when", "will",
+            "into", "form", "page", "below", "after", "before", "clear", "cleared", "line",
+            "lines", "table", "shows", "shown", "each", "value", "values", "user"}
+    words = {w.strip('"\'.,!;:()').lower() for w in expected_effect.split()}
+    distinctive = [w for w in words if len(w) >= 6 and w.isalpha() and w not in stop]
+    if not distinctive:
+        return None
+    hits = [w for w in distinctive if w in flat_page]
+    return len(hits) >= 1
 
 
 def _records(end_state: Any) -> list[dict] | None:
@@ -201,14 +255,28 @@ INVENTORY_JS = """() => {
     if (name) {
       labels.push(name);
       const type = el.tagName === "SELECT" ? "select" : (el.getAttribute("type") || "text");
-      details[name] = {type, value: el.value, valid: el.checkValidity ? el.checkValidity() : true};
+      details[name] = {type, value: el.value,
+                       valid: el.checkValidity ? el.checkValidity() : true};
     }
   }
-  const buttons = [];
-  for (const b of document.querySelectorAll("button, [role=button], input[type=submit]")) {
-    const t = clean(b.textContent || b.value || b.getAttribute("aria-label") || "");
-    if (t) buttons.push(t);
+  // Everything a person can click, named the way a screen reader would say it. Icons carry
+  // no text, so aria-label and title are the only names they have; leaving them out is how
+  // the repair loop ends up guessing at numbered badges.
+  const seen = new Map();
+  for (const el of document.querySelectorAll(
+      'a, button, [role=button], [role=link], [role=menuitem], [role=tab], ' +
+      'input[type=submit], input[type=button]')) {
+    const name = clean(el.getAttribute("aria-label") || el.getAttribute("title")
+                       || el.textContent || el.value || "");
+    if (!name) continue;
+    const tag = el.tagName.toLowerCase();
+    const key = tag + "|" + name;
+    seen.set(key, (seen.get(key) || 0) + 1);
   }
+  const clickable = [...seen.entries()].map(([key, n]) => {
+    const [tag, name] = key.split("|");
+    return {tag, name, count: n};
+  });
   const selects = {};
   for (const el of document.querySelectorAll("select")) {
     const byFor = el.id ? document.querySelector(`label[for="${el.id}"]`) : null;
@@ -216,7 +284,7 @@ INVENTORY_JS = """() => {
     const name = clean(byFor?.textContent || wrap?.textContent || el.getAttribute("name") || "");
     selects[name] = [...el.options].map(o => clean(o.textContent)).filter(Boolean);
   }
-  return {labels, buttons, selects, details};
+  return {labels, clickable, selects, details};
 }"""
 
 

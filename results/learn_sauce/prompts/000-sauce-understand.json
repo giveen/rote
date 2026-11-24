@@ -7,11 +7,11 @@
    "content": [
     {
      "type": "input_text",
-     "text": "You are watching a screen recording of someone using an internal web application, so that the work can be automated afterwards.\n\nDescribe the procedure, not the pixels. Someone who has never seen this app must be able\nto repeat the task from your description alone, with different data.\n\nRules:\n- Name controls by the label a person sees on screen. Never invent one.\n- `rows` holds the data the person entered, one object per repetition, keyed by a short lower_snake_case name of the field. If the task was performed once, there is one row.\n- `steps` is the procedure for ONE repetition, plus the actions that end the task (adding the line, submitting). Use `type`, `select`, `click`, `submit`, `navigate`, `read`.\n- Set `value` to the row key that fills that control, written as \"{field}\", not to the literal text from the recording. For clicks and submits, `value` is null.\n- `fields` lists every control the person touched, with the kind of control it is.\n- `expected_effect` is what is visibly different once the task has succeeded.\n- Only describe actions the recording supports. If something is ambiguous, say so in the step's `note` instead of guessing silently.\n\nReturn JSON matching the schema."
+     "text": "You are watching a screen recording of someone using an internal web application, so that the work can be automated afterwards.\n\nDescribe the procedure, not the pixels. Someone who has never seen this app must be able\nto repeat the task from your description alone, with different data.\n\nRules:\n- Name controls by the label a person sees on screen. Never invent one.\n- `rows` holds the data the person entered, one object per repetition, keyed by a short lower_snake_case name of the field. If the task was performed once, there is one row.\n- `steps` is the procedure for ONE repetition, plus the actions that end the task (adding the line, submitting). Use `type`, `select`, `click`, `submit`, `navigate`, `read`.\n- Set `value` to the row key that fills that control, written as \"{field}\", not to the literal text from the recording. For clicks and submits, `value` is null.\n- `fields` lists every control the person touched, with the kind of control it is.\n- `expected_effect` is what is visibly different once the task has succeeded.\n- Accessible names change while a page is in use: a cart link reads \"Cart, empty\" before an\n  item is added and \"Cart, 1 item\" after. Name such a control by its stable part (\"Cart\"),\n  never by the part that moves.\n- Only describe actions the recording supports. If something is ambiguous, say so in the step's `note` instead of guessing silently.\n\nReturn JSON matching the schema."
     },
     {
      "type": "input_file",
-     "file_id": "file-1301000075547143"
+     "file_id": "file-1879332026735881"
     }
    ]
   }
@@ -141,6 +141,22 @@
        "additionalProperties": false
       }
      },
+     "repeat": {
+      "type": "object",
+      "properties": {
+       "first": {
+        "type": "integer"
+       },
+       "last": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "first",
+       "last"
+      ],
+      "additionalProperties": false
+     },
      "expected_effect": {
       "type": "string"
      }
@@ -151,6 +167,7 @@
      "fields",
      "steps",
      "rows",
+     "repeat",
      "expected_effect"
     ],
     "additionalProperties": false

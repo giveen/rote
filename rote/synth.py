@@ -12,89 +12,16 @@ from pathlib import Path
 
 from .plan import Plan, Step
 
-HEADER = '''"""Automation for {app}, written by rote from {recording}.
+from .scriptenv import SCRIPT_ENV
+
+DOC_TEMPLATE = '''"""Automation for {app}, written by rote from {recording}.
 
 Procedure: {goal}
 What success looks like: {effect}
 
 Data comes in through `rows`: one dict per repetition, keyed by {fields}.
 No model is involved in running this file.
-"""
-from __future__ import annotations
-
-from playwright.sync_api import Page
-
-
-def _field(page: Page, label: str):
-    """A control by its visible label, falling back to placeholder or name."""
-    for locator in (page.get_by_label(label, exact=False),
-                    page.get_by_placeholder(label, exact=False),
-                    page.locator(f"[name='{{label}}']")):
-        if locator.count() > 0:
-            return locator.first
-    raise LookupError(f"no form control labelled {{label!r}} on {{page.url}}")
-
-
-def _button(page: Page, name: str):
-    """A button by its accessible name, falling back to visible text."""
-    for locator in (page.get_by_role("button", name=name, exact=False),
-                    page.get_by_text(name, exact=False)):
-        if locator.count() > 0:
-            return locator.first
-    raise LookupError(f"no button named {{name!r}} on {{page.url}}")
-
-
-def _truthy(value) -> bool:
-    return str(value).strip().lower() in ("1", "true", "yes", "y", "on", "checked")
-
-
-def _tick(page: Page, label: str, want: bool, action: str) -> None:
-    control = _field(page, label)
-    (control.check if want else control.uncheck)()
-
-
-DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
-
-
-def _to_iso_date(value: str) -> str | None:
-    """Only formats with no ambiguity. 03/01/2026 is refused on purpose: it is either
-    March 1st or January 3rd, and silently picking one corrupts the user's data."""
-    from datetime import datetime
-    text = str(value).strip()
-    for fmt in DATE_FORMATS:
-        try:
-            return datetime.strptime(text, fmt).date().isoformat()
-        except ValueError:
-            continue
-    return None
-
-
-def _fill(page: Page, label: str, value: str) -> None:
-    """Fill a control, giving a date input the form it actually accepts."""
-    control = _field(page, label)
-    kind = (control.get_attribute("type") or "text").lower()
-    text = "" if value is None else str(value)
-    if kind == "date":
-        iso = _to_iso_date(text)
-        if not iso:
-            raise ValueError(f"{{label!r}} is a date field; {{text!r}} is not an "
-                             f"unambiguous date. Give it YYYY-MM-DD.")
-        control.fill(iso)
-        if not control.input_value():
-            raise ValueError(f"the date field {{label!r}} rejected {{iso!r}}")
-        return
-    control.fill(text)
-
-
-def _select(page: Page, label: str, value: str) -> None:
-    """Choose an option, and say which ones exist when the value is not among them."""
-    control = _field(page, label)
-    options = [t.strip() for t in control.locator("option").all_inner_texts()]
-    if value not in options:
-        raise LookupError(f"{{label!r}} has no option {{value!r}}. "
-                          f"Available: {{options}}")
-    control.select_option(label=value)
-'''
+"""'''
 
 FOOTER = '''
 
@@ -139,7 +66,9 @@ def _line(step: Step, indent: str = "    ") -> str:
         return (f"{indent}_tick(page, {_py_str(step.target)}, {expr}, "
                 f"{_py_str(step.action)})")
     if step.action == "navigate":
-        return f'{indent}page.goto({_py_str(step.value or "")})'
+        if not step.value:
+            return f"{indent}pass  # navigate step had no URL; the replay already opened the app"
+        return f"{indent}page.goto({_py_str(step.value)})"
     if step.action == "read":
         return f"{indent}pass  # read {_py_str(step.target)}"
     raise ValueError(f"unsupported action {step.action!r}")
@@ -167,16 +96,16 @@ def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
     plan decides where each `once` step goes: everything before the first per-row step is
     setup, everything after the last one is teardown.
     """
-    scopes = [s.scope for s in plan.steps]
-    per_row_index = [i for i, sc in enumerate(scopes) if sc != "once"]
-    if per_row_index:
-        first, last = per_row_index[0], per_row_index[-1]
+    n = len(plan.steps)
+    if plan.repeat:
+        first = min(max(plan.repeat[0] - 1, 0), n)      # to 0-based, clamped
+        last = min(max(plan.repeat[1] - 1, first), n - 1)
+        setup_steps = plan.steps[:first]
+        row_steps = plan.steps[first:last + 1]
+        finish_steps = plan.steps[last + 1:]
     else:
-        first, last = len(plan.steps), len(plan.steps)
-
-    setup_steps = plan.steps[:first]
-    row_steps = [s for i, s in enumerate(plan.steps) if first <= i <= last and s.scope != "once"]
-    finish_steps = [s for i, s in enumerate(plan.steps) if i > last and s.scope == "once"]
+        # no repeat range: run the whole thing once, with the first row's data
+        setup_steps, row_steps, finish_steps = [], plan.steps, []
 
     body = [
         "",
@@ -189,15 +118,16 @@ def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
         lines = [_line(s, "    ") for s in steps]
         return "\n".join(lines) if lines else "    pass"
 
-    parts = [
-        HEADER.format(app=plan.app or "the app", recording=recording,
-                      goal=plan.goal or "(no goal recorded)",
-                      effect=plan.expected_effect or "(not stated)",
-                      fields=", ".join(f"`{k}`" for k in _row_keys(plan)) or "the fields"),
-        _key_lookup(plan),
-        "\n".join(body),
-        FOOTER.format(setup=block(setup_steps), finish=block(finish_steps)),
-    ]
+    doc = DOC_TEMPLATE.format(
+        app=plan.app or "the app", recording=recording,
+        goal=plan.goal or "(no goal recorded)",
+        effect=plan.expected_effect or "(not stated)",
+        fields=", ".join(f"`{k}`" for k in _row_keys(plan)) or "the fields")
+
+    # Only the docstring is a template: the embedded script helpers contain braces of their
+    # own, so they are concatenated, never formatted.
+    parts = [doc, SCRIPT_ENV, "\n".join(body),
+             FOOTER.format(setup=block(setup_steps), finish=block(finish_steps))]
     return "\n".join(parts)
 
 

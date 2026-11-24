@@ -46,11 +46,36 @@ class TestJudging(unittest.TestCase):
                         [(c.name, c.detail) for c in checks if not c.ok])
 
     def test_missing_value_is_named(self):
+        """A value that never landed must still fail loudly — the check moved, the verdict
+        did not get kinder."""
         state = {"vendors": [{"company_name": "Someone Else", "country": "Spain",
                               "annual_spend": "78000", "welcome_pack": True}]}
         checks = _judge_effect(state, "Someone Else Spain 78000 yes", ROWS)
-        self.assertFalse(checks[0].ok)
-        self.assertIn("Brightline AB", checks[0].detail)
+        visible = next(c for c in checks if c.name == "the values are visible on the final page")
+        self.assertFalse(visible.ok)
+        self.assertIn("Brightline AB", visible.detail)
+
+    def test_confirmation_screen_that_does_not_echo_data_is_not_a_failure(self):
+        """The checkout case: the values were accepted, the app ends on 'Thank you for your
+        order' and shows none of them."""
+        checks = _judge_effect(None, "Thank you for your order. Back home.",
+                               [{"first_name": "Grace", "last_name": "Hopper"}],
+                               expected_effect='A confirmation page says "Thank you for your '
+                                               'order" once the checkout completes',
+                               ran_clean=True)
+        visible = next(c for c in checks if c.name.startswith("the values are visible"))
+        self.assertTrue(visible.ok)
+        self.assertIn("does not echo", visible.detail)
+
+    def test_confirmation_without_a_reached_end_state_still_fails(self):
+        """But if the app is not in the expected state either, missing values are a failure."""
+        checks = _judge_effect(None, "Something unrelated happened.",
+                               [{"first_name": "Grace"}],
+                               expected_effect='A confirmation page says "Thank you for your '
+                                               'order" once the checkout completes',
+                               ran_clean=True)
+        visible = next(c for c in checks if c.name.startswith("the values are visible"))
+        self.assertFalse(visible.ok)
 
     def test_wrong_row_count_fails(self):
         state = {"vendors": [{"company_name": "Brightline AB", "country": "Spain",
@@ -62,8 +87,9 @@ class TestJudging(unittest.TestCase):
 
     def test_no_end_state_only_checks_the_page(self):
         checks = _judge_effect(None, "Brightline AB Spain 78000 yes", ROWS)
-        self.assertTrue(checks[0].ok)
-        self.assertEqual(len(checks), 1, "nothing to compare against without an end state")
+        self.assertTrue(all(c.ok for c in checks))
+        self.assertFalse([c for c in checks if c.name.startswith("the app stored")],
+                         "there is nothing to compare against without an end state")
 
     def test_records_are_found_under_common_keys(self):
         for key in ("lines", "vendors", "records", "items", "entries", "rows"):

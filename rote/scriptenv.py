@@ -87,6 +87,15 @@ def _fill(page, label: str, value: str) -> None:
     control.fill(text)
 
 
+def select_options(page, label: str):
+    """The choices a dropdown actually offers."""
+    try:
+        control = _field(page, label)
+        return [t.strip() for t in control.locator("option").all_inner_texts() if t.strip()]
+    except Exception:
+        return []
+
+
 def _select(page, label: str, value: str) -> None:
     """Choose an option, and say which ones exist when the value is not among them."""
     control = _field(page, label)
@@ -119,6 +128,7 @@ _first_present = _ns["_first_present"]
 field = _ns["_field"]
 button = _ns["_button"]
 fill = _ns["_fill"]
+select_options = _ns["select_options"]
 select = _ns["_select"]
 tick = _ns["_tick"]
 

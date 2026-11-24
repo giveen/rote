@@ -25,24 +25,33 @@ Rules:
 - If a dropdown rejected a value, the data was wrong for that app — keep the plan and say \
 so in the step's note instead of changing the target.
 - Keep `rows` as they are: the values are the user's data, not something to edit.
-- In an `each_row` step, keep every `{field}` placeholder exactly as it is. Never replace
-  one with the literal text from the recording: the whole point is that the automation
-  takes different data. A literal in an `each_row` step is a bug.
-- In a `once` step, a literal value from the recording is correct and preferred: signing in
-  and navigating do not change per row. A `{placeholder}` in a `once` step demands data the
-  user has no reason to supply.
-- If a run failed because a row was missing a value, the step is probably setup that should
-  be marked `once` rather than the row being incomplete.
-- Keep `scope` marks: `each_row` repeats per data row, `once` happens at the end.
+- Inside the `repeat` range, keep every `{field}` placeholder exactly as it is. Never
+  replace one with the literal text from the recording: the point of the automation is that
+  it takes different data.
+- Outside the `repeat` range, a literal value from the recording is correct: signing in and
+  navigating do not change per row. A `{placeholder}` outside the range demands data the user
+  has no reason to supply.
+- Keep `repeat` pointing at the steps that repeat per row. If the run failed because a row
+  was missing a value, the step probably sits outside the range and should not be asking for
+  data.
 - If a control is a date or number input, its value must be in the form that control
   accepts (dates as YYYY-MM-DD), regardless of how it was displayed on screen.
+- If the evidence shows a control named with a count or a state ("Cart, 1 item",
+  "Cart, empty"), that name moves as the page changes: use only its stable part ("Cart").
+- A `navigate` step needs the URL in `value`; if you cannot supply one, drop the step. The
+  replay already opens the app before running.
 
 Return the corrected plan as JSON matching the schema."""
 
 
 def repair(plan: Plan, evidence: str, *, ledger: Ledger, attempt: int = 1,
-           effort: str = "max") -> Plan:
-    prompt = (
+           effort: str = "max", history: list[str] | None = None) -> Plan:
+    prompt = ""
+    if history:
+        prompt += ("WHAT HAS ALREADY BEEN TRIED — do not undo a change that fixed an earlier "
+                   "failure, and do not repeat one that did not help:\n"
+                   + "\n".join(history[-5:]) + "\n\n")
+    prompt += (
         "THE PLAN THAT FAILED\n```json\n"
         + json.dumps(plan.to_dict(), ensure_ascii=False, indent=1)
         + "\n```\n\nEVIDENCE FROM THE RUN\n```\n" + evidence[:4000] + "\n```"

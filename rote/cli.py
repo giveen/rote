@@ -25,13 +25,60 @@ from .understand import understand
 DEFAULT_BUDGET = 10.0
 
 
+def _canon(key: str) -> str:
+    return "".join(ch for ch in key.lower() if ch.isalnum())
+
+
+def _align_rows(rows: list[dict[str, str]], plan: Plan) -> list[dict[str, str]]:
+    """Rename the user's columns to the plan's own key names.
+
+    The plan's example rows are the contract, but nobody should have to guess that it called
+    the field `zip_postal_code` when their spreadsheet says `zip`. Matching is exact, then
+    case-insensitive, then punctuation-insensitive, then prefix — and only when it is
+    unambiguous, so a wrong guess stays visible instead of silently filling the wrong field.
+    """
+    wanted = [k for k in _row_keys(plan)]
+    if not wanted:
+        return rows
+    aligned = []
+    for row in rows:
+        out = dict(row)
+        for key in wanted:
+            if key in out:
+                continue
+            cands = [k for k in out if k not in wanted]
+            match = (next((k for k in cands if _canon(k) == _canon(key)), None)
+                     or next((k for k in cands
+                              if _canon(k).startswith(_canon(key))
+                              or _canon(key).startswith(_canon(k))), None)
+                     if len(cands) == 1 else None)
+            if match:
+                out[key] = out.pop(match)
+        aligned.append(out)
+    return aligned
+
+
+def _row_keys(plan: Plan) -> list[str]:
+    keys: list[str] = []
+    for row in plan.rows:
+        for k in row:
+            if k not in keys:
+                keys.append(k)
+    for step in plan.steps:
+        if step.value and step.value.startswith("{") and step.value.endswith("}"):
+            k = step.value[1:-1]
+            if k not in keys:
+                keys.append(k)
+    return keys
+
+
 def _load_rows(path: Path | None, plan: Plan) -> tuple[list[dict[str, str]], bool]:
     """Fresh data for the proof. Without a file we can only re-use the video's own data,
     which proves the script runs but not that it generalises — so it is flagged."""
     if path:
         data = json.loads(path.read_text())
         rows = data["rows"] if isinstance(data, dict) else data
-        return [dict(r) for r in rows], True
+        return _align_rows([dict(r) for r in rows], plan), True
     return plan.rows, False
 
 
@@ -58,13 +105,15 @@ def cmd_learn(args: argparse.Namespace) -> int:
               "This proves it runs, not that it generalises.")
 
     attempts: list[dict] = []
+    history: list[str] = []
     result: ReplayResult | None = None
     script = out / f"{video.stem}.py"
     for attempt in range(args.repairs + 1):
         write_script(plan, script, recording=video.name)
         result = replay(script, args.url, fresh_rows,
                         screenshot=out / f"proof_attempt{attempt + 1}.png",
-                        headless=not args.headed)
+                        headless=not args.headed,
+                        expected_effect=plan.expected_effect)
         attempts.append({
             "attempt": attempt,
             "passed": result.passed,
@@ -81,9 +130,10 @@ def cmd_learn(args: argparse.Namespace) -> int:
             break
         print(f"  attempt {attempt + 1}: failed ({result.error or 'checks failed'}) "
               f"→ repairing the plan")
+        history.append(f"attempt {attempt + 1}: {result.error or 'checks failed'}")
         try:
             fixed = repair(plan, result.as_evidence(), ledger=ledger, attempt=attempt + 1,
-                           effort=args.effort)
+                           effort=args.effort, history=history)
         except BudgetExceeded as e:
             print(f"  stopped: {e}")
             break
@@ -208,7 +258,7 @@ def main(argv: list[str] | None = None) -> int:
     learn.add_argument("--url", required=True, help="the app the task runs in")
     learn.add_argument("--rows", help="JSON file with your data for the proof")
     learn.add_argument("--out", default="results/learn")
-    learn.add_argument("--repairs", type=int, default=2)
+    learn.add_argument("--repairs", type=int, default=3)
     learn.add_argument("--effort", default="max")
     learn.add_argument("--hint", default=None, help="one line of context, optional")
     learn.add_argument("--budget", type=float, default=DEFAULT_BUDGET)

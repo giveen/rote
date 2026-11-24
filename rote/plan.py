@@ -72,9 +72,18 @@ PLAN_SCHEMA: dict[str, Any] = {
                 "additionalProperties": False,
             },
         },
+        # Which steps repeat for each row of data. One pair of numbers instead of a scope
+        # label on every step: a model that has to get N judgements right will flip one of
+        # them, and one flip reorders the whole script.
+        "repeat": {
+            "type": "object",
+            "properties": {"first": {"type": "integer"}, "last": {"type": "integer"}},
+            "required": ["first", "last"],
+            "additionalProperties": False,
+        },
         "expected_effect": {"type": "string"},
     },
-    "required": ["app", "goal", "fields", "steps", "rows", "expected_effect"],
+    "required": ["app", "goal", "fields", "steps", "rows", "repeat", "expected_effect"],
     "additionalProperties": False,
 }
 
@@ -102,6 +111,7 @@ class Plan:
     rows: list[dict[str, str]] = field(default_factory=list)
     fields: list[dict[str, str]] = field(default_factory=list)
     expected_effect: str = ""
+    repeat: tuple[int, int] | None = None   # 1-based, inclusive
     cost: float = 0.0
     seconds: float = 0.0
 
@@ -117,6 +127,8 @@ class Plan:
                   for row in d.get("rows", [])],
             fields=d.get("fields", []),
             expected_effect=d.get("expected_effect", ""),
+            repeat=(int(d["repeat"]["first"]), int(d["repeat"]["last"]))
+            if isinstance(d.get("repeat"), dict) else None,
         )
 
     @classmethod
@@ -131,6 +143,8 @@ class Plan:
                 "steps": [{"action": s.action, "target": s.target,
                            "value": s.value, "note": s.note, "scope": s.scope}
                           for s in self.steps],
+                "repeat": ({"first": self.repeat[0], "last": self.repeat[1]}
+                           if self.repeat else None),
                 "expected_effect": self.expected_effect}
 
     @property
