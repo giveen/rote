@@ -1,0 +1,98 @@
+{
+  "goal": "Log goods received against a purchase order in Parts intake by adding two parts lines and submitting the intake.",
+  "rows": [
+    {
+      "description": "Brake pad set, front",
+      "location": "Aisle 4 \u00b7 Bay 2",
+      "quantity": "12",
+      "sku": "BRK-2041",
+      "supplier": "Northwind Supply",
+      "unit_cost": "18.40"
+    },
+    {
+      "description": "Oil filter, spin-on",
+      "location": "Aisle 7 \u00b7 Bay 1",
+      "quantity": "40",
+      "sku": "FLT-1180",
+      "supplier": "Bergen Parts",
+      "unit_cost": "6.25"
+    }
+  ],
+  "steps": [
+    {
+      "action": "type",
+      "target": "SKU",
+      "value": "BRK-2041"
+    },
+    {
+      "action": "type",
+      "target": "Description",
+      "value": "Brake pad set, front"
+    },
+    {
+      "action": "type",
+      "target": "Quantity",
+      "value": "12"
+    },
+    {
+      "action": "type",
+      "target": "Unit cost",
+      "value": "18.40"
+    },
+    {
+      "action": "select",
+      "target": "Supplier",
+      "value": "Northwind Supply"
+    },
+    {
+      "action": "select",
+      "target": "Location",
+      "value": "Aisle 4 \u00b7 Bay 2"
+    },
+    {
+      "action": "click",
+      "target": "Add line",
+      "value": null
+    },
+    {
+      "action": "type",
+      "target": "SKU",
+      "value": "FLT-1180"
+    },
+    {
+      "action": "type",
+      "target": "Description",
+      "value": "Oil filter, spin-on"
+    },
+    {
+      "action": "type",
+      "target": "Quantity",
+      "value": "40"
+    },
+    {
+      "action": "type",
+      "target": "Unit cost",
+      "value": "6.25"
+    },
+    {
+      "action": "select",
+      "target": "Supplier",
+      "value": "Bergen Parts"
+    },
+    {
+      "action": "select",
+      "target": "Location",
+      "value": "Aisle 7 \u00b7 Bay 1"
+    },
+    {
+      "action": "click",
+      "target": "Add line",
+      "value": null
+    },
+    {
+      "action": "submit",
+      "target": "Submit intake",
+      "value": null
+    }
+  ]
+}
