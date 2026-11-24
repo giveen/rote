@@ -13,6 +13,7 @@ import sys
 import time
 from pathlib import Path
 
+from .certify import write_certificate
 from .client import BudgetExceeded, Ledger
 from .plan import Plan
 from .record import intake_session, record, session_from_json, vendor_session
@@ -111,6 +112,14 @@ def cmd_trace(args: argparse.Namespace) -> int:
     print(f"{rows} calls traced")
     print(f"  {md}")
     print(f"  {csv_path}")
+    return 0
+
+
+def cmd_certify(args: argparse.Namespace) -> int:
+    run_dir = Path(args.run)
+    out = Path(args.out) if args.out else run_dir / "certificate.html"
+    written = write_certificate(run_dir, out)
+    print(written)
     return 0
 
 
@@ -228,6 +237,11 @@ def main(argv: list[str] | None = None) -> int:
     tr.add_argument("--out", default="results/learn")
     tr.add_argument("--title", default="Prompt and token trace")
     tr.set_defaults(func=cmd_trace)
+
+    cert = sub.add_parser("certify", help="write a standalone HTML certificate for a finished run")
+    cert.add_argument("--run", default="results/learn")
+    cert.add_argument("--out", default=None)
+    cert.set_defaults(func=cmd_certify)
 
     args = p.parse_args(argv)
     return args.func(args)
