@@ -17,6 +17,11 @@ python -m rote learn intake.mp4 --url http://127.0.0.1:8765/app.html --rows my_d
 # → results/learn/certificate.html
 ```
 
+![The certificate for the intake task: PASSED, six checks, the fresh data visible in the embedded screenshot](docs/certificate.png)
+
+*Every run produces one of these: what it understood, what the replay proved, and what it cost.
+This is `results/submission/intake/certificate.html`, generated from that run.*
+
 ## Why this is not another "AI writes scripts" demo
 
 Three decisions do the work:
