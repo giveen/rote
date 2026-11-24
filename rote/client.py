@@ -30,10 +30,17 @@ class BudgetExceeded(RuntimeError):
     pass
 
 
-def api_key() -> str:
+def api_key(config_path: Path | str | None = None, *, auth_path: Path | str | None = None,
+            path: Path | str | None = None, config_file: Path | str | None = None) -> str:
+    """The API key: `MODEL_API_KEY`, else `~/.config/muse/auth.json` (`providers.meta.api_key`).
+
+    `config_path` (aliases: `auth_path`, `path`, `config_file`) points at an
+    alternate config file; the default is the real one.
+    """
     if key := os.environ.get("MODEL_API_KEY"):
         return key
-    cfg = Path.home() / ".config" / "muse" / "auth.json"
+    cfg = config_path or auth_path or path or config_file
+    cfg = Path(cfg) if cfg else Path.home() / ".config" / "muse" / "auth.json"
     return json.loads(cfg.read_text())["providers"]["meta"]["api_key"]
 
 

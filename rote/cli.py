@@ -15,6 +15,7 @@ from pathlib import Path
 
 from .certify import write_certificate
 from .client import BudgetExceeded, Ledger
+from .doctor import cmd_doctor
 from .plan import Plan, align_rows, row_keys
 from .preflight import reachable
 from .record import intake_session, record, session_from_json, vendor_session
@@ -298,6 +299,13 @@ def main(argv: list[str] | None = None) -> int:
     cert.add_argument("--run", default="results/learn")
     cert.add_argument("--out", default=None)
     cert.set_defaults(func=cmd_certify)
+
+    doc = sub.add_parser("doctor", help="check Python, dependencies, browser, key and API")
+    doc.add_argument("--offline", action="store_true",
+                    help="skip the API reachability check (no network)")
+    doc.add_argument("--verbose", action="store_true",
+                    help="print the full, untruncated reason under each check")
+    doc.set_defaults(func=cmd_doctor)
 
     args = p.parse_args(argv)
     return args.func(args)
