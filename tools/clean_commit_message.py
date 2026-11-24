@@ -1,22 +1,24 @@
-"""Rewrite a commit message so it carries the brief, never the person's own words.
+"""Rewrite a commit message to the narrow record: what changed, and who wrote it.
 
-A commit produced by the assistant used to quote the user's chat verbatim. On a public
-repository that publishes a private conversation, so the quoted block is removed and the
-message points at where a brief would live instead.
+Removes any block that quotes a conversation or inlines a brief. A model-built commit keeps a
+`Built-with:` trailer and a pointer to the brief file; nothing else is added to the log.
 """
 import sys
 
 msg = sys.stdin.read()
-marker = "----- prompt -----"
-if "Produced by: the assistant" not in msg:
-    sys.stdout.write(msg)          # a model's brief stays: that is the point of the record
-    raise SystemExit(0)
+cut = msg.find("----- prompt -----")
+if cut != -1:
+    msg = msg[:cut]
 
-head = msg.split(marker, 1)[0].rstrip()
-lines = [ln for ln in head.splitlines()
-         if not ln.startswith("Prompt: (given in this commit message)")]
-lines.append("Prompt: none published — this change came from conversation, not from a "
-             "model brief.")
-lines.append("(Messages produced by a model quote their brief verbatim; conversation is "
-             "not published.)")
+lines = []
+for line in msg.splitlines():
+    if line.startswith(("Prompt:", "(Messages produced", "(conversation, not published)",
+                        "Produced by: the assistant")):
+        continue
+    if line.startswith("Produced by: "):
+        line = "Built-with: " + line.split("Produced by: ", 1)[1]
+    lines.append(line)
+
+while lines and not lines[-1].strip():
+    lines.pop()
 sys.stdout.write("\n".join(lines).rstrip() + "\n")
