@@ -1,0 +1,62 @@
+[
+  {
+    "name": "anyio",
+    "version": "4.16.0",
+    "licence": "MIT",
+    "advisories": []
+  },
+  {
+    "name": "certifi",
+    "version": "2026.11.20",
+    "licence": "MPL-2.0",
+    "advisories": []
+  },
+  {
+    "name": "greenlet",
+    "version": "3.5.6",
+    "licence": "MIT AND PSF-2.0",
+    "advisories": []
+  },
+  {
+    "name": "h11",
+    "version": "0.16.0",
+    "licence": "MIT",
+    "advisories": []
+  },
+  {
+    "name": "httpcore",
+    "version": "1.0.9",
+    "licence": "BSD-3-Clause",
+    "advisories": []
+  },
+  {
+    "name": "httpx",
+    "version": "0.28.1",
+    "licence": "BSD-3-Clause",
+    "advisories": []
+  },
+  {
+    "name": "idna",
+    "version": "3.20",
+    "licence": "BSD-3-Clause",
+    "advisories": []
+  },
+  {
+    "name": "pip",
+    "version": "26.3",
+    "licence": "MIT",
+    "advisories": []
+  },
+  {
+    "name": "playwright",
+    "version": "1.65.2",
+    "licence": "Apache-2.0",
+    "advisories": []
+  },
+  {
+    "name": "typing_extensions",
+    "version": "4.16.0",
+    "licence": "PSF-2.0",
+    "advisories": []
+  }
+]
