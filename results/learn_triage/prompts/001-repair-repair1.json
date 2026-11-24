@@ -1,0 +1,165 @@
+{
+ "model": "muse-ember-1.0",
+ "input": "WHAT HAS ALREADY BEEN TRIED — do not undo a change that fixed an earlier failure, and do not repeat one that did not help:\nattempt 1: KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\"\n\nTHE PLAN THAT FAILED\n```json\n{\n \"app\": \"HelpDesk\",\n \"goal\": \"Find a ticket in the open tickets queue, open it, mark it Resolved, change its priority, assign it, add a resolution note, and save it.\",\n \"fields\": [\n  {\n   \"control\": \"text\",\n   \"example\": \"T-1042\",\n   \"label\": \"Search tickets\"\n  },\n  {\n   \"control\": \"select\",\n   \"example\": \"Resolved\",\n   \"label\": \"Status\"\n  },\n  {\n   \"control\": \"select\",\n   \"example\": \"Low\",\n   \"label\": \"Priority\"\n  },\n  {\n   \"control\": \"select\",\n   \"example\": \"Jeremy\",\n   \"label\": \"Assignee\"\n  },\n  {\n   \"control\": \"text\",\n   \"example\": \"Refunded the duplicate charge\",\n   \"label\": \"Resolution note\"\n  }\n ],\n \"rows\": [\n  {\n   \"cells\": [\n    {\n     \"field\": \"ticket_id\",\n     \"value\": \"T-1042\"\n    },\n    {\n     \"field\": \"status\",\n     \"value\": \"Resolved\"\n    },\n    {\n     \"field\": \"priority\",\n     \"value\": \"Low\"\n    },\n    {\n     \"field\": \"assignee\",\n     \"value\": \"Jeremy\"\n    },\n    {\n     \"field\": \"resolution_note\",\n     \"value\": \"Refunded the duplicate charge\"\n    }\n   ]\n  }\n ],\n \"steps\": [\n  {\n   \"action\": \"type\",\n   \"target\": \"Search tickets\",\n   \"value\": \"{ticket_id}\",\n   \"note\": \"Filters the Open tickets list to the requested ticket.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"click\",\n   \"target\": \"Open\",\n   \"value\": null,\n   \"note\": \"Click the Open button on the row for the ticket_id; in the recording this button is labelled 'Open T-1042'.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"select\",\n   \"target\": \"Status\",\n   \"value\": \"{status}\",\n   \"note\": \"Change Status from Open to the requested status.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"select\",\n   \"target\": \"Priority\",\n   \"value\": \"{priority}\",\n   \"note\": \"Change Priority from High to the requested priority.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"select\",\n   \"target\": \"Assignee\",\n   \"value\": \"{assignee}\",\n   \"note\": \"Change Assignee from Unassigned to the requested assignee.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"type\",\n   \"target\": \"Resolution note\",\n   \"value\": \"{resolution_note}\",\n   \"note\": \"Enter the resolution note text.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"click\",\n   \"target\": \"Save ticket\",\n   \"value\": null,\n   \"note\": \"Save the ticket; the detail panel closes and a saved confirmation appears.\",\n   \"scope\": \"each_row\"\n  }\n ],\n \"repeat\": {\n  \"first\": 1,\n  \"last\": 1\n },\n \"expected_effect\": \"The ticket row in the Open tickets list shows Priority Low and Status Resolved, the ticket detail panel closes, and a confirmation reading 'T-1042 saved' appears at the bottom right.\"\n}\n```\n\nEVIDENCE FROM THE RUN\n```\nerror: KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\"\nFAIL script runs on fresh data: KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\"\nFAIL every value was accepted by its control: at least one control rejected what was typed\nPASS the values are visible on the final page: not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording\nPASS the app reached the state the recording ended in: matched the expected end state\nform controls actually on the page: Search tickets, Status, Priority, Assignee, Resolution note\nclickable things on the page, by their accessible name: \"Open T-1042\" (button), \"Open T-1043\" (button), \"Open T-1047\" (button), \"Open T-1051\" (button), \"Open T-1055\" (button), \"Open T-1060\" (button), \"Open T-1064\" (button), \"Open T-1070\" (button), \"Save ticket\" (button)\noptions in 'Status': Open, In progress, Resolved, Waiting on customer\noptions in 'Priority': High, Normal, Low\noptions in 'Assignee': Jeremy, Priya, Sam, Unassigned\npage text after the run:\n◈ HelpDesk\nTriage\nQueue · your team\nOpen tickets\nSearch tickets\nTICKET\tSUBJECT\tPRIORITY\tSTATUS\t\nT-1042\tCharged twice for October\tHigh\tOpen\tOpen T-1042\nT-1043\tSSO login loops on Safari\tNormal\tOpen\tOpen T-1043\nT-1047\tExport to CSV missing totals\tLow\tOpen\tOpen T-1047\nT-1051\tWebhook retries flooding\tHigh\tIn progress\tOpen T-1051\nT-1055\tBilling address will not save\tNormal\tOpen\tOpen T-1055\nT-1060\tSeat count wrong after upgrade\tNormal\tOpen\tOpen T-1060\nT-1064\tRefund not showing in portal\tHigh\tWaiting on customer\tOpen T-1064\nT-1070\tAPI key rotation failed\tNormal\tIn progress\tOpen T-1070\n```",
+ "reasoning": {
+  "effort": "max"
+ },
+ "instructions": "You are correcting a plan for automating a web task, after the automation was run and did not succeed.\n\nYou get the plan, and the evidence from the failed run: the error, which values did not reach the page, and the app's real controls (labels, buttons and dropdown options) as the browser reported them.\n\nRules:\n- Change only what the evidence shows is wrong. Keep everything that already worked.\n- Name controls exactly as the app reports them. Do not invent labels or options.\n- If a dropdown rejected a value, the data was wrong for that app — keep the plan and say so in the step's note instead of changing the target.\n- Keep `rows` as they are: the values are the user's data, not something to edit.\n- Inside the `repeat` range, keep every `{field}` placeholder exactly as it is. Never\n  replace one with the literal text from the recording: the point of the automation is that\n  it takes different data.\n- Outside the `repeat` range, a literal value from the recording is correct: signing in and\n  navigating do not change per row. A `{placeholder}` outside the range demands data the user\n  has no reason to supply.\n- Keep `repeat` pointing at the steps that repeat per row. If the run failed because a row\n  was missing a value, the step probably sits outside the range and should not be asking for\n  data.\n- If a control is a date or number input, its value must be in the form that control\n  accepts (dates as YYYY-MM-DD), regardless of how it was displayed on screen.\n- If the evidence shows a control named with a count or a state (\"Cart, 1 item\",\n  \"Cart, empty\"), that name moves as the page changes: use only its stable part (\"Cart\").\n- A `navigate` step needs the URL in `value`; if you cannot supply one, drop the step. The\n  replay already opens the app before running.\n\nReturn the corrected plan as JSON matching the schema.",
+ "text": {
+  "format": {
+   "type": "json_schema",
+   "name": "plan",
+   "schema": {
+    "type": "object",
+    "properties": {
+     "app": {
+      "type": "string"
+     },
+     "goal": {
+      "type": "string"
+     },
+     "fields": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "label": {
+         "type": "string"
+        },
+        "control": {
+         "type": "string",
+         "enum": [
+          "text",
+          "number",
+          "select",
+          "checkbox",
+          "file"
+         ]
+        },
+        "example": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "label",
+        "control",
+        "example"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "steps": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "action": {
+         "type": "string",
+         "enum": [
+          "type",
+          "select",
+          "click",
+          "submit",
+          "navigate",
+          "read",
+          "check",
+          "uncheck"
+         ]
+        },
+        "target": {
+         "type": "string"
+        },
+        "value": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "note": {
+         "type": "string"
+        },
+        "scope": {
+         "type": "string",
+         "enum": [
+          "each_row",
+          "once"
+         ]
+        }
+       },
+       "required": [
+        "action",
+        "target",
+        "value",
+        "note",
+        "scope"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "rows": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "cells": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "field": {
+            "type": "string"
+           },
+           "value": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "field",
+           "value"
+          ],
+          "additionalProperties": false
+         }
+        }
+       },
+       "required": [
+        "cells"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "repeat": {
+      "type": "object",
+      "properties": {
+       "first": {
+        "type": "integer"
+       },
+       "last": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "first",
+       "last"
+      ],
+      "additionalProperties": false
+     },
+     "expected_effect": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "app",
+     "goal",
+     "fields",
+     "steps",
+     "rows",
+     "repeat",
+     "expected_effect"
+    ],
+    "additionalProperties": false
+   },
+   "strict": true
+  }
+ },
+ "prompt_cache_key": "rote-repair-v1"
+}

@@ -92,10 +92,16 @@ class TestJudging(unittest.TestCase):
                          "there is nothing to compare against without an end state")
 
     def test_records_are_found_under_common_keys(self):
-        for key in ("lines", "vendors", "records", "items", "entries", "rows"):
+        for key in ("lines", "vendors", "records", "items", "entries", "rows", "saved"):
             self.assertEqual(_records({key: [{"a": 1}]}), [{"a": 1}], key)
         self.assertIsNone(_records(None))
         self.assertIsNone(_records({"other": "thing"}))
+
+    def test_records_are_found_under_a_key_nobody_guessed(self):
+        """This is the regression: triage stores its rows under `saved`, and the strongest
+        check silently did not run because the name was not on the list."""
+        self.assertEqual(_records({"whatever_they_called_it": [{"a": 1}, {"a": 2}]}),
+                         [{"a": 1}, {"a": 2}])
 
 
 class TestChecks(unittest.TestCase):

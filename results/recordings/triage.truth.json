@@ -1,0 +1,62 @@
+{
+  "name": "triage",
+  "url": "http://127.0.0.1:8765/triage.html",
+  "seconds": 6.07,
+  "steps": [
+    {
+      "action": "type",
+      "target": "Search tickets",
+      "value": "T-1042"
+    },
+    {
+      "action": "click",
+      "target": "Open T-1042",
+      "value": null
+    },
+    {
+      "action": "select",
+      "target": "Status",
+      "value": "Resolved"
+    },
+    {
+      "action": "select",
+      "target": "Priority",
+      "value": "Low"
+    },
+    {
+      "action": "select",
+      "target": "Assignee",
+      "value": "Jeremy"
+    },
+    {
+      "action": "type",
+      "target": "Resolution note",
+      "value": "Refunded the duplicate charge."
+    },
+    {
+      "action": "click",
+      "target": "Save ticket",
+      "value": null
+    }
+  ],
+  "rows": [
+    {
+      "ticket": "T-1042",
+      "status": "Resolved",
+      "priority": "Low",
+      "assignee": "Jeremy",
+      "note": "Refunded the duplicate charge."
+    }
+  ],
+  "end_state": {
+    "saved": [
+      {
+        "ticket": "T-1042",
+        "status": "Resolved",
+        "priority": "Low",
+        "assignee": "Jeremy",
+        "note": "Refunded the duplicate charge."
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+[{"ticket": "T-1051", "status": "Resolved", "priority": "Normal",
+  "assignee": "Sam", "note": "Retry storm traced to a misconfigured backoff."},
+ {"ticket": "T-1055", "status": "In progress", "priority": "High",
+  "assignee": "Priya", "note": "Needs a schema change, scheduled for Thursday."}]

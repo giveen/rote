@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HelpDesk — Triage</title>
+<style>
+  :root { --bg:#f5f6f8; --panel:#fff; --line:#e2e6ee; --text:#141a24; --muted:#616b7c;
+          --accent:#5b45d6; --good:#18794e; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+         background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:center; gap:14px; padding:12px 24px;
+           background:var(--accent); color:#fff; }
+  header b { font-size:15px; letter-spacing:.3px; }
+  header span { font-size:12px; opacity:.85; }
+  main { max-width:1000px; margin:26px auto; padding:0 22px; display:grid;
+         grid-template-columns:1.25fr 1fr; gap:20px; align-items:start; }
+  h1 { font-size:19px; margin:0 0 14px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-weight:500; }
+  input, select, textarea { width:100%; padding:9px 10px; border:1px solid var(--line);
+        border-radius:9px; font:inherit; background:#fbfcfe; color:var(--text); }
+  textarea { min-height:70px; resize:vertical; }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent);
+        border-color:var(--accent); background:#fff; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:12px; }
+  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); }
+  th { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); }
+  .tag { font-size:11px; padding:2px 7px; border-radius:999px; background:#eef0f6; }
+  .tag.high { background:#fde8e8; color:#a11a1a; }
+  .tag.resolved { background:#e6f5ee; color:var(--good); }
+  button { padding:8px 13px; border-radius:8px; border:1px solid var(--line);
+           background:#fff; font:inherit; cursor:pointer; }
+  button.open { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff;
+                   font-weight:600; }
+  .side { display:none; }
+  .side.show { display:block; }
+  .toast { position:fixed; right:22px; bottom:22px; background:#e9f7f0; border:1px solid #9ad3b6;
+           color:#14532d; padding:11px 15px; border-radius:10px; display:none; font-size:13px; }
+  .toast.show { display:block; }
+  .row { display:grid; gap:12px; margin-bottom:12px; }
+  @media (max-width: 820px) { main { grid-template-columns:1fr; padding:0 14px; } }
+</style>
+</head>
+<body>
+<header><b>◈ HelpDesk</b><span>Triage</span><span>Queue · your team</span></header>
+
+<main>
+  <section class="card">
+    <h1>Open tickets</h1>
+    <label for="search">Search tickets</label>
+    <input id="search" placeholder="Ticket id or subject">
+
+    <table>
+      <thead><tr><th>Ticket</th><th>Subject</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </section>
+
+  <aside class="card side" id="detail">
+    <h1 id="detail-title">Ticket</h1>
+    <div class="row">
+      <div>
+        <label for="status">Status</label>
+        <select id="status">
+          <option>Open</option><option>In progress</option>
+          <option>Resolved</option><option>Waiting on customer</option>
+        </select>
+      </div>
+      <div>
+        <label for="priority">Priority</label>
+        <select id="priority">
+          <option>High</option><option>Normal</option><option>Low</option>
+        </select>
+      </div>
+      <div>
+        <label for="assignee">Assignee</label>
+        <select id="assignee">
+          <option>Jeremy</option><option>Priya</option><option>Sam</option><option>Unassigned</option>
+        </select>
+      </div>
+      <div>
+        <label for="note">Resolution note</label>
+        <textarea id="note" placeholder="What did you do?"></textarea>
+      </div>
+    </div>
+    <button class="primary" id="save">Save ticket</button>
+  </aside>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TICKETS = [
+  {id:"T-1042", subject:"Charged twice for October", priority:"High", status:"Open",
+   assignee:"Unassigned", note:""},
+  {id:"T-1043", subject:"SSO login loops on Safari", priority:"Normal", status:"Open",
+   assignee:"Priya", note:""},
+  {id:"T-1047", subject:"Export to CSV missing totals", priority:"Low", status:"Open",
+   assignee:"Unassigned", note:""},
+  {id:"T-1051", subject:"Webhook retries flooding", priority:"High", status:"In progress",
+   assignee:"Sam", note:""},
+  {id:"T-1055", subject:"Billing address will not save", priority:"Normal", status:"Open",
+   assignee:"Unassigned", note:""},
+  {id:"T-1060", subject:"Seat count wrong after upgrade", priority:"Normal", status:"Open",
+   assignee:"Priya", note:""},
+  {id:"T-1064", subject:"Refund not showing in portal", priority:"High", status:"Waiting on customer",
+   assignee:"Sam", note:""},
+  {id:"T-1070", subject:"API key rotation failed", priority:"Normal", status:"In progress",
+   assignee:"Jeremy", note:""},
+];
+const saved = [];
+let editing = null;
+
+const $ = (id) => document.getElementById(id);
+const tag = (text, cls) => `<span class="tag ${cls || ''}">${text}</span>`;
+
+function render() {
+  const q = $('search').value.trim().toLowerCase();
+  const shown = TICKETS.filter(t => !q || t.id.toLowerCase().includes(q)
+                                     || t.subject.toLowerCase().includes(q));
+  $('rows').innerHTML = shown.map(t => `
+    <tr>
+      <td>${t.id}</td>
+      <td>${t.subject}</td>
+      <td>${tag(t.priority, t.priority === 'High' ? 'high' : '')}</td>
+      <td>${tag(t.status, t.status === 'Resolved' ? 'resolved' : '')}</td>
+      <td><button class="open" aria-label="Open ${t.id}">Open ${t.id}</button></td>
+    </tr>`).join('') || '<tr><td colspan="5" style="color:#616b7c">No tickets match.</td></tr>';
+
+  for (const t of TICKETS) {
+    const btn = document.querySelector(`button[aria-label="Open ${t.id}"]`);
+    if (btn) btn.addEventListener('click', () => openTicket(t));
+  }
+}
+
+function openTicket(t) {
+  editing = t;
+  $('detail-title').textContent = `${t.id} — ${t.subject}`;
+  $('status').value = t.status;
+  $('priority').value = t.priority;
+  $('assignee').value = t.assignee;
+  $('note').value = t.note;
+  $('detail').classList.add('show');
+}
+
+$('save').addEventListener('click', () => {
+  if (!editing) return;
+  editing.status = $('status').value;
+  editing.priority = $('priority').value;
+  editing.assignee = $('assignee').value;
+  editing.note = $('note').value;
+  saved.push({ticket: editing.id, status: editing.status, priority: editing.priority,
+              assignee: editing.assignee, note: editing.note});
+  window.__submitted = {saved: JSON.parse(JSON.stringify(saved))};
+  $('toast').textContent = `${editing.id} saved`;
+  $('toast').classList.add('show');
+  $('detail').classList.remove('show');
+  render();
+});
+
+$('search').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>

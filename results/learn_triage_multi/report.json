@@ -1,0 +1,217 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/triage.mp4",
+  "plan": {
+    "app": "HelpDesk",
+    "goal": "Find ticket T-1042 in Open tickets, mark it Resolved with Priority Low, Assignee Jeremy, and resolution note 'Refunded the duplicate charge', then save it.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "T-1042",
+        "label": "Search tickets"
+      },
+      {
+        "control": "select",
+        "example": "Resolved",
+        "label": "Status"
+      },
+      {
+        "control": "select",
+        "example": "Low",
+        "label": "Priority"
+      },
+      {
+        "control": "select",
+        "example": "Jeremy",
+        "label": "Assignee"
+      },
+      {
+        "control": "text",
+        "example": "Refunded the duplicate charge",
+        "label": "Resolution note"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "ticket_id",
+            "value": "T-1042"
+          },
+          {
+            "field": "status",
+            "value": "Resolved"
+          },
+          {
+            "field": "priority",
+            "value": "Low"
+          },
+          {
+            "field": "assignee",
+            "value": "Jeremy"
+          },
+          {
+            "field": "resolution_note",
+            "value": "Refunded the duplicate charge"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Search tickets",
+        "value": "{ticket}",
+        "note": "Text box placeholder is 'Ticket id or subject'; typing filters Open tickets to the matching ticket.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Open",
+        "value": null,
+        "note": "Button for the searched ticket reads 'Open T-1042'; stable label is 'Open'. Opens the ticket detail pane on the right.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Status",
+        "value": "{status}",
+        "note": "Changes from Open to Resolved.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Priority",
+        "value": "{priority}",
+        "note": "Changes from High to Low.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Assignee",
+        "value": "{assignee}",
+        "note": "Changes from Unassigned to Jeremy.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Resolution note",
+        "value": "{note}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Save ticket",
+        "value": null,
+        "note": "Saves the ticket and closes the detail pane.",
+        "scope": "each_row"
+      }
+    ],
+    "repeat": {
+      "first": 1,
+      "last": 7
+    },
+    "expected_effect": "A 'T-1042 saved' confirmation appears at the bottom right, the ticket detail pane closes, and the filtered ticket row shows Priority Low and Status Resolved instead of High and Open."
+  },
+  "script": "results/learn_triage_multi/triage.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\""
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": false,
+          "detail": "0 iteration(s) recorded for 2 row(s)"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": false,
+          "detail": "at least one control rejected what was typed"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": false,
+          "detail": "steps 1\u20131 only enter data, with no click or submit, so 2 rows would overwrite the same form and produce one result instead of 2"
+        }
+      ],
+      "error": "KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\"",
+      "cost": 0.0014664959999999999
+    },
+    {
+      "attempt": 1,
+      "passed": true,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "2 row(s) through triage.py"
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": true,
+          "detail": "2 iterations, each ending on triage.html"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 10 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the app stored exactly the rows we sent",
+          "ok": true,
+          "detail": "2/2 rows stored as sent"
+        },
+        {
+          "name": "the task was submitted",
+          "ok": true,
+          "detail": "2 record(s) confirmed by the app"
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": true,
+          "detail": "2 committing step(s) inside steps 1\u20137"
+        }
+      ],
+      "error": null,
+      "cost": 0.00374512
+    }
+  ],
+  "passed": true,
+  "ledger": {
+    "calls": 2,
+    "spent_usd": 0.003745,
+    "input_tokens": 3932,
+    "cached_tokens": 2480,
+    "output_tokens": 7180,
+    "reasoning_tokens": 6134,
+    "cache_hit_pct": 63.1
+  },
+  "elapsed_s": 20.5,
+  "fresh_data": true
+}

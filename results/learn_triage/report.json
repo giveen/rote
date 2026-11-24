@@ -1,0 +1,187 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/triage.mp4",
+  "plan": {
+    "app": "HelpDesk",
+    "goal": "Find a ticket in the open tickets queue, open it, mark it Resolved, change its priority, assign it, add a resolution note, and save it.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "T-1042",
+        "label": "Search tickets"
+      },
+      {
+        "control": "select",
+        "example": "Resolved",
+        "label": "Status"
+      },
+      {
+        "control": "select",
+        "example": "Low",
+        "label": "Priority"
+      },
+      {
+        "control": "select",
+        "example": "Jeremy",
+        "label": "Assignee"
+      },
+      {
+        "control": "text",
+        "example": "Refunded the duplicate charge",
+        "label": "Resolution note"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "ticket_id",
+            "value": "T-1042"
+          },
+          {
+            "field": "status",
+            "value": "Resolved"
+          },
+          {
+            "field": "priority",
+            "value": "Low"
+          },
+          {
+            "field": "assignee",
+            "value": "Jeremy"
+          },
+          {
+            "field": "resolution_note",
+            "value": "Refunded the duplicate charge"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Search tickets",
+        "value": "{ticket}",
+        "note": "Filters the Open tickets list to the requested ticket.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Open",
+        "value": null,
+        "note": "Click the Open button on the row for the ticket_id; in the recording this button is labelled 'Open T-1042'.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Status",
+        "value": "{status}",
+        "note": "Change Status from Open to the requested status.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Priority",
+        "value": "{priority}",
+        "note": "Change Priority from High to the requested priority.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Assignee",
+        "value": "{assignee}",
+        "note": "Change Assignee from Unassigned to the requested assignee.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Resolution note",
+        "value": "{note}",
+        "note": "Enter the resolution note text.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Save ticket",
+        "value": null,
+        "note": "Save the ticket; the detail panel closes and a saved confirmation appears.",
+        "scope": "each_row"
+      }
+    ],
+    "repeat": {
+      "first": 0,
+      "last": 6
+    },
+    "expected_effect": "The ticket row in the Open tickets list shows Priority Low and Status Resolved, the ticket detail panel closes, and a confirmation reading 'T-1042 saved' appears at the bottom right."
+  },
+  "script": "results/learn_triage/triage.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\""
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": false,
+          "detail": "at least one control rejected what was typed"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        }
+      ],
+      "error": "KeyError: \"row has no value for 'ticket_id': ['assignee', 'note', 'priority', 'status', 'ticket']\"",
+      "cost": 0.0017035
+    },
+    {
+      "attempt": 1,
+      "passed": true,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "1 row(s) through triage.py"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 5 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        }
+      ],
+      "error": null,
+      "cost": 0.005094124
+    }
+  ],
+  "passed": true,
+  "ledger": {
+    "calls": 2,
+    "spent_usd": 0.005094,
+    "input_tokens": 3877,
+    "cached_tokens": 756,
+    "output_tokens": 9558,
+    "reasoning_tokens": 8498,
+    "cache_hit_pct": 19.5
+  },
+  "elapsed_s": 24.0,
+  "fresh_data": true
+}

@@ -1,0 +1,2 @@
+{"unit": "triage", "purpose": "understand", "effort": "max", "input_tokens": 1820, "cached_tokens": 0, "output_tokens": 3043, "reasoning_tokens": 2575, "cost": 0.0017035, "seconds": 7.7, "ok": true, "note": "video triage.mp4", "prompt_ref": "000-triage-understand.json"}
+{"unit": "repair", "purpose": "repair1", "effort": "max", "input_tokens": 2057, "cached_tokens": 756, "output_tokens": 6515, "reasoning_tokens": 5923, "cost": 0.003390624, "seconds": 12.82, "ok": true, "note": "attempt 1", "prompt_ref": "001-repair-repair1.json"}

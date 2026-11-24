@@ -282,15 +282,28 @@ def _cycles(events: list, n_rows: int) -> list[Check]:
                   f"{n_rows} iterations, each ending on {urls[0].rsplit('/', 1)[-1] or '/'}")]
 
 
+RECORD_KEYS = ("lines", "vendors", "records", "items", "entries", "rows", "saved",
+               "created", "submitted", "results", "data")
+
+
 def _records(end_state: Any) -> list[dict] | None:
-    """Whatever the app says it now holds, if it says anything."""
-    if isinstance(end_state, dict):
-        for key in ("lines", "vendors", "records", "items", "entries", "rows"):
-            value = end_state.get(key)
-            if isinstance(value, list):
-                return [v for v in value if isinstance(v, dict)]
-        if all(isinstance(v, dict) for v in end_state.values()) and end_state:
-            return list(end_state.values())
+    """Whatever the app says it now holds, if it says anything.
+
+    Known key names are tried first, then any list of objects at all: an app that calls its
+    stored rows "saved" is not going to be missed because it chose a word we did not guess.
+    """
+    if not isinstance(end_state, dict):
+        return None
+    for key in RECORD_KEYS:
+        value = end_state.get(key)
+        if isinstance(value, list) and all(isinstance(v, dict) for v in value):
+            return value
+    candidates = [v for v in end_state.values()
+                  if isinstance(v, list) and v and all(isinstance(x, dict) for x in v)]
+    if len(candidates) == 1:
+        return candidates[0]
+    if end_state and all(isinstance(v, dict) for v in end_state.values()):
+        return list(end_state.values())
     return None
 
 

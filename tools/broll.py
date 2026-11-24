@@ -23,6 +23,8 @@ TASKS = {
                 "results/vendor_fresh.json"),
     "sauce": ("results/submission/sauce/sauce.py", "https://www.saucedemo.com/",
               "results/sauce_fresh.json"),
+    "triage": ("results/submission/triage/triage.py", "http://127.0.0.1:8765/triage.html",
+               "results/triage_multi.json"),
 }
 
 
