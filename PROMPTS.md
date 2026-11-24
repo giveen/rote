@@ -1,35 +1,37 @@
-# What the model wrote, and what it was asked
+# What the model was asked, and what it wrote
 
-The hackathon asks judges to identify what was built during the event, and to show the Muse
-usage behind it. This repository records that narrowly: the briefs the model was given, the
-session it ran, and the commits it produced. Nothing else.
+The hackathon asks judges to identify what was built during the event and to show the Muse
+usage behind it. This repository records exactly that, and nothing else.
 
-## The evidence
+## In every commit message
 
-| where | what it is |
-|---|---|
-| `prompts/*.md` | the brief handed to the model, verbatim |
-| `prompts/muse-code-trajectory.json` | the session Muse Code exported: every model call and tool call, unedited |
-| `<run>/trace.md`, `trace.csv` | per-call tokens and cost at runtime, from the API's own usage object |
-| commit trailers | `Built-with:` names the model, the call count and the cost |
-
-## How a commit records it
-
-Commits that a model produced carry a trailer, and nothing else is added:
+One line, quoted:
 
 ```
 certify: standalone HTML certificate for a run
 
-Built-with: muse-ember-1.0 via Muse Code (31 calls, 96% cached, $0.03)
-Brief: prompts/certify-task.md
-Trajectory: prompts/muse-code-trajectory.json
+Prompt to Muse: "add rote certify — a self-contained HTML certificate for a run"
+
+Built by: muse-ember-1.0 via Muse Code (31 calls, 96% cached, $0.03)
 ```
 
-Commits written by hand carry no trailer. The brief is referenced, not pasted, so the log stays
-readable and the evidence lives in one place.
+The prompt is one line on purpose: it says what was asked for, and the log stays a log.
 
-## Why the trajectory matters more than this file
+## Where the rest of the evidence lives
 
-`prompts/muse-code-trajectory.json` is the unedited export (`/export → Trajectory`): 1,028
-events, 31 model calls, every tool call including the failed ones. If this document and the
-trajectory ever disagree, the trajectory is right.
+| where | what it is |
+|---|---|
+| `prompts/*.md` | the full brief handed to the model |
+| `prompts/muse-code-trajectory.json` | the session Muse Code exported: every model call and tool call, unedited |
+| `<run>/trace.md`, `<run>/trace.csv` | per-call tokens and cost at runtime, from the API's own usage object |
+
+## What is deliberately not here
+
+Private conversation is not part of this repository, and `tools/commit.sh` has no way to put
+it there.
+
+## Why the trajectory outranks this file
+
+`prompts/muse-code-trajectory.json` is the unedited `/export → Trajectory` output: 1,028
+events, 31 model calls to `muse-ember-1.0`, every tool call including the failed ones. If this
+document and the trajectory disagree, the trajectory is right.

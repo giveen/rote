@@ -1,44 +1,37 @@
 #!/usr/bin/env bash
-# Commit, recording which model wrote the code — and nothing about the conversation.
+# Commit with the prompt it came from, in the form asked for:
 #
 #   tools/commit.sh -s "certify: HTML certificate for a run" \
-#                   -b prompts/certify-task.md \
-#                   -m "muse-ember-1.0 via Muse Code (31 calls, 96% cached, \$0.03)"
+#                   -p "add rote certify — a self-contained HTML certificate for a run" \
+#                   -m "muse-ember-1.0 via Muse Code, 31 calls, \$0.03"
 #
-# -b references a brief file that is committed in prompts/. The file is NOT pasted into the
-# message: the log stays readable and the evidence lives where it belongs. There is
-# deliberately no way to pass free text, so a private conversation cannot end up in a public
-# repository through this tool.
+# The prompt is ONE line. Long briefs stay in prompts/ and are referred to in the body, never
+# pasted: the log is a log. There is no way to pass a conversation transcript through this
+# tool, which is deliberate.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-subject=""; brief=""; meta=""
-while getopts "s:b:m:" opt; do
+subject=""; prompt=""; meta=""
+while getopts "s:p:m:" opt; do
   case $opt in
     s) subject="$OPTARG" ;;
-    b) brief="$OPTARG" ;;
+    p) prompt="$OPTARG" ;;
     m) meta="$OPTARG" ;;
     *) echo "bad option" >&2; exit 2 ;;
   esac
 done
-[ -n "$subject" ] || { echo "usage: $0 -s subject [-b brieffile] [-m model-and-cost]" >&2; exit 2; }
+[ -n "$subject" ] || { echo "usage: $0 -s subject -p \"one line prompt\" [-m meta]" >&2; exit 2; }
+[ -n "$prompt" ] || { echo "a commit needs the prompt it came from (-p)" >&2; exit 2; }
+case "$prompt" in
+  *$'\n'*) echo "the prompt must be one line" >&2; exit 2 ;;
+esac
 
-if [ -n "$brief" ]; then
-  [ -f "$brief" ] || { echo "no such brief: $brief" >&2; exit 2; }
-  case "$brief" in
-    prompts/*) : ;;
-    *) echo "a brief must live in prompts/ so the record stays in one place" >&2; exit 2 ;;
-  esac
-fi
+msg="$subject
 
-msg="$subject"
-if [ -n "$meta" ]; then
-  msg="$msg
+Prompt to Muse: \"$prompt\""
+[ -n "$meta" ] && msg="$msg
 
-Built-with: $meta"
-fi
-[ -n "$brief" ] && msg="$msg
-Brief: $brief"
+Built by: $meta"
 
 git -c user.name="${GIT_AUTHOR_NAME:-giveen}" \
     -c user.email="${GIT_AUTHOR_EMAIL:-giveen@users.noreply.github.com}" \
