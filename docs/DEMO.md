@@ -121,17 +121,32 @@ Cut to the repo, `rote/` open.
 
 ## Footage you do not have to shoot
 
-Recorded replays of the automation doing the work, with fresh data:
+Recorded replays of the automation doing the work with fresh data. Two speeds, deliberately:
 
-| file | what it shows | length |
-|---|---|---|
-| `results/broll/intake.mp4` | the intake automation filling two lines and submitting | 2.7 s |
-| `results/broll/intake-slow.mp4` | the same at half speed, for the cut | 5.5 s |
-| `results/broll/vendors.mp4` | the vendor form: dropdowns, a date, a note, a checkbox | 3 s |
-| `results/broll/vendors-slow.mp4` | half speed | 6 s |
+- the **plain** clip is how fast the automation actually runs;
+- the **`-paced`** clip was recorded with `--slow-mo 300`, so a person can follow it. Say so on
+  screen if you use it;
+- the **`-slow`** cut is the same footage at half speed, for a tighter edit.
 
-`tools/broll.py` regenerates them. The half-speed cuts are labelled as such on screen — the run
-really is that fast, and saying so is better than pretending it is slow.
+| file | length |
+|---|---|
+| `results/broll/intake-slow.mp4` | 5.4 s |
+| `results/broll/intake.mp4` | 2.7 s |
+| `results/broll/sauce-paced-slow.mp4` | 14.1 s |
+| `results/broll/sauce-paced.mp4` | 7.1 s |
+| `results/broll/sauce-slow.mp4` | 6.3 s |
+| `results/broll/sauce.mp4` | 3.2 s |
+| `results/broll/triage-paced-slow.mp4` | 15.0 s |
+| `results/broll/triage-paced.mp4` | 7.5 s |
+| `results/broll/triage-slow.mp4` | 5.4 s |
+| `results/broll/triage.mp4` | 2.7 s |
+| `results/broll/vendors-slow.mp4` | 5.2 s |
+| `results/broll/vendors.mp4` | 2.6 s |
+
+Regenerate any of them with `tools/broll.py <task>` (real speed) or
+`tools/broll.py <task> --slow-mo 300` (paced). For the video, use the paced clips for sauce and
+triage: at real speed three checkouts finish in under a second and the interesting screens are
+gone before the eye finds them.
 
 ## Numbers to have ready, and where they come from
 
