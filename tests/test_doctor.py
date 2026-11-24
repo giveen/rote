@@ -17,9 +17,9 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 from rote.client import api_key
-from rote.doctor import (Check, check_api_key, check_python_version,
-                         cmd_doctor, exit_code, format_check, run_checks,
-                         shorten)
+from rote.doctor import (Check, check_api_key, check_api_reachable,
+                         check_python_version, cmd_doctor, exit_code,
+                         format_check, run_checks, shorten)
 
 _FAKE_OK = (True, "")
 _FAKE_MISSING = (False, "browsers not installed: Executable doesn't exist")
@@ -108,11 +108,68 @@ class TestOffline(unittest.TestCase):
 
     def test_online_fakes_it_via_injection(self):
         """Without --offline a faked answering API passes, no network touched."""
-        checks = _checks(offline=False, count_tokens_fn=lambda word: 2)
-        self.assertTrue(_by_name(checks, "API reachable").ok)
-        checks = _checks(offline=False,
-                         count_tokens_fn=mock.Mock(side_effect=RuntimeError("down")))
-        self.assertFalse(_by_name(checks, "API reachable").ok)
+        with mock.patch.dict(os.environ, {"MODEL_API_KEY": "test-key"}):
+            checks = _checks(offline=False, count_tokens_fn=lambda word: 2)
+            self.assertTrue(_by_name(checks, "API reachable").ok)
+            checks = _checks(offline=False,
+                             count_tokens_fn=mock.Mock(side_effect=RuntimeError("down")))
+            self.assertFalse(_by_name(checks, "API reachable").ok)
+
+
+class TestSkippedApiWhenKeyMissing(unittest.TestCase):
+    def test_failing_key_check_skips_api_check(self):
+        """A missing key skips the API probe instead of blaming the network."""
+        with TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "nope.json"
+            calls: list[str] = []
+
+            def fake_count(word):
+                calls.append(word)
+                return 1
+
+            with mock.patch.dict(os.environ, {"MODEL_API_KEY": ""}):
+                checks = _checks(offline=False, auth_path=missing,
+                                 count_tokens_fn=fake_count)
+        key = _by_name(checks, "API key")
+        api = _by_name(checks, "API reachable")
+        self.assertFalse(key.ok)
+        self.assertTrue(api.ok, api.detail)
+        self.assertIn("skipped", api.detail.lower())
+        self.assertIn("no api key", api.detail.lower())
+        self.assertEqual(calls, [])
+        self.assertTrue(format_check(api).startswith("⚠"),
+                        format_check(api))
+        self.assertEqual(exit_code(checks), 1)
+
+    def test_skipped_api_check_does_not_fail_passing_run(self):
+        """A skipped API check alone never flips a passing run to exit 1."""
+        checks = [
+            Check("Python version", True, "Python 3.14.0 (>= 3.12)"),
+            Check("Dependencies", True, "playwright, httpx imported"),
+            Check("Chromium installed", True, "Chromium launched"),
+            Check("API key present", True,
+                  "found in ~/.config/muse/auth.json"),
+            Check("API reachable", True,
+                  "skipped (no API key to test with)"),
+        ]
+        self.assertEqual(exit_code(checks), 0)
+
+    def test_unreadable_key_is_credential_problem_not_network(self):
+        """If the key file vanishes under the API probe, blame the key."""
+        def fake_count(word):
+            raise FileNotFoundError(
+                "[Errno 2] No such file or directory: '/fake/auth.json'")
+
+        check = check_api_reachable(count_tokens_fn=fake_count)
+        self.assertFalse(check.ok)
+        self.assertIn("API key", check.detail)
+        self.assertIn("MODEL_API_KEY", check.fix)
+        self.assertNotIn("FileNotFoundError", check.detail)
+        self.assertNotIn("No such file", check.detail)
+        self.assertNotIn("check your network", check.fix)
+        line = format_check(check)
+        self.assertNotIn("FileNotFoundError", line)
+        self.assertNotIn("No such file", line)
 
 
 class TestExitCode(unittest.TestCase):

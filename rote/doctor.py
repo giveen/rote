@@ -136,6 +136,9 @@ def check_api_reachable(count_tokens_fn: Callable | None = None, *,
                      "unreachable (client unavailable)", API_FIX)
     try:
         n = fn("hi")
+    except (FileNotFoundError, PermissionError, KeyError):
+        return Check("API reachable", False,
+                     "unreachable (API key file not found)", KEY_FIX)
     except Exception as e:
         return Check("API reachable", False,
                      f"unreachable ({type(e).__name__}: {e})", API_FIX)
@@ -155,13 +158,19 @@ def run_checks(*, offline: bool = False,
     """Run the five checks in order. Never touches the network when `offline`."""
     cfg = auth_path or config_path or config_file
     vi = python_version or version_info
-    return [
-        check_python_version(vi),
-        check_dependencies(),
-        check_browser(browser_available_fn or browser_fn),
-        check_api_key(cfg),
-        check_api_reachable(count_tokens_fn or token_count_fn, offline=offline),
-    ]
+    python_check = check_python_version(vi)
+    deps_check = check_dependencies()
+    browser_check = check_browser(browser_available_fn or browser_fn)
+    key_check = check_api_key(cfg)
+    count_fn = count_tokens_fn or token_count_fn
+    if offline:
+        api_check = check_api_reachable(count_fn, offline=True)
+    elif not key_check.ok:
+        api_check = Check("API reachable", True,
+                          "skipped (no API key to test with)")
+    else:
+        api_check = check_api_reachable(count_fn, offline=False)
+    return [python_check, deps_check, browser_check, key_check, api_check]
 
 
 def exit_code(checks: list[Check]) -> int:
