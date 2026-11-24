@@ -119,13 +119,28 @@ Cut to the repo, `rote/` open.
 
 ---
 
+## Footage you do not have to shoot
+
+Recorded replays of the automation doing the work, with fresh data:
+
+| file | what it shows | length |
+|---|---|---|
+| `results/broll/intake.mp4` | the intake automation filling two lines and submitting | 2.7 s |
+| `results/broll/intake-slow.mp4` | the same at half speed, for the cut | 5.5 s |
+| `results/broll/vendors.mp4` | the vendor form: dropdowns, a date, a note, a checkbox | 3 s |
+| `results/broll/vendors-slow.mp4` | half speed | 6 s |
+
+`tools/broll.py` regenerates them. The half-speed cuts are labelled as such on screen — the run
+really is that fast, and saying so is better than pretending it is slow.
+
 ## Numbers to have ready, and where they come from
 
 | number | value | source |
 |---|---|---|
-| cost, three tasks | $0.009844 | `results/submission/trace.md` |
-| model calls | 5 | same |
-| input / cached | 10,583 / 3,868 tokens | same |
+| cost, three tasks | $0.035592 | `results/submission/trace.md` |
+| model calls | 6 | same |
+| input / cached | 12,829 / 8,464 tokens | same |
+| spread across runs | $0.0098 – $0.0356 | git history, `results/submission/` |
 | one recording read | ~$0.001 | `results/submission/*/report.json` |
 | video input length-independence | ~169 tokens | `results/gate/video_tokens.py` |
 | tests | 45 passing | `./check.sh` |
