@@ -53,6 +53,28 @@ Why the account total is far larger than the submission run: the exploratory wor
 repository was deliberately expensive — reasoning at `max` effort over real libraries — and
 most of those tokens are cached reads. The product's own run is the cheap one.
 
+## The form, read from the live page
+
+Checked on the actual submit form, not from the guide.
+
+| field | required | limit / format |
+|---|---|---|
+| Team name | yes | free text |
+| Project description | yes | **3,000 characters**, live counter |
+| Public GitHub repository | yes | URL |
+| Demo video | yes | **a link, not an upload** — the placeholder is `https://youtube.com/watch?v=…`, so it must be hosted (YouTube, unlisted is fine) |
+| Meta team ID | yes | `1857589511891749` (the `?team_id=` in the dev.meta.ai URL) |
+| Use of Meta products | yes | 3,000 characters |
+| Why Meta's models matter | yes | 3,000 characters |
+| Link to X post | no | URL; they ask you to tag @MetaForDevs and @cerebral_valley |
+| Usage screenshot | yes | image upload, JPG/PNG/WEBP/GIF, ≤10 MB, up to 10 |
+| Muse Code JSON export | if used | file upload, ≤10 MB — **accepts `.json`, not `.json.gz`**, so the repository's gzipped trajectory must be expanded first |
+| Two opinion radios + a permissions checkbox | yes | — |
+
+`tools/submission_files.sh` builds exactly those files into `submission-upload/`, expands the
+trajectory, and writes `answers.md` with drafts for all three 3,000-character fields (1,158 /
+1,128 / 931 characters, so there is room to add).
+
 ## To do on December 2, before submitting
 
 1. **Re-take the usage screenshot** with the range Nov 23 – Dec 2 and the model filter set to

@@ -6,3 +6,4 @@ node_modules/
 **/*.webm
 .DS_Store
 .venv
+submission-upload/
