@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stockroom — Parts intake</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#262b36; --text:#e7e9ee;
+          --muted:#98a1b3; --accent:#4f8cff; --good:#3fbf7f; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif;
+         background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:center; gap:12px; padding:14px 22px;
+           border-bottom:1px solid var(--line); background:var(--panel); }
+  .brand { font-weight:600; letter-spacing:.2px; }
+  .pill { font-size:12px; color:var(--muted); border:1px solid var(--line);
+          padding:2px 8px; border-radius:999px; }
+  main { max-width:900px; margin:26px auto; padding:0 22px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+          padding:18px; margin-bottom:18px; }
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px; }
+  input, select { width:100%; padding:9px 10px; border-radius:8px;
+                  border:1px solid var(--line); background:#0d1014; color:var(--text);
+                  font-size:14px; }
+  input:focus, select:focus { outline:2px solid var(--accent); outline-offset:0;
+                  border-color:var(--accent); }
+  .row-actions { display:flex; gap:10px; margin-top:16px; }
+  button { padding:9px 16px; border-radius:8px; border:1px solid var(--line);
+           background:#1e2330; color:var(--text); font-size:14px; cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent);
+                   color:#fff; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:500; font-size:12px; text-transform:uppercase;
+       letter-spacing:.4px; }
+  .ok { color:var(--good); }
+  .toast { position:fixed; right:22px; bottom:22px; background:#12301f;
+           border:1px solid #1f6b44; color:#bff0d5; padding:12px 16px;
+           border-radius:10px; display:none; }
+  .toast.show { display:block; }
+  .empty { color:var(--muted); font-size:13px; padding:14px 10px; }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">◈ Stockroom</span>
+  <span class="pill">Receiving</span>
+  <span class="pill">Northwind Depot</span>
+</header>
+
+<main>
+  <h1>Parts intake</h1>
+  <p class="sub">Log goods received against a purchase order.</p>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label for="sku">SKU</label>
+        <input id="sku" placeholder="e.g. BRK-2041" autocomplete="off">
+      </div>
+      <div>
+        <label for="desc">Description</label>
+        <input id="desc" placeholder="Brake pad set" autocomplete="off">
+      </div>
+      <div>
+        <label for="qty">Quantity</label>
+        <input id="qty" placeholder="0" autocomplete="off">
+      </div>
+      <div>
+        <label for="cost">Unit cost</label>
+        <input id="cost" placeholder="0.00" autocomplete="off">
+      </div>
+      <div>
+        <label for="supplier">Supplier</label>
+        <select id="supplier">
+          <option value="">Choose…</option>
+          <option>Northwind Supply</option>
+          <option>Acme Industrial</option>
+          <option>Bergen Parts</option>
+        </select>
+      </div>
+      <div>
+        <label for="location">Location</label>
+        <select id="location">
+          <option value="">Choose…</option>
+          <option>Aisle 4 · Bay 2</option>
+          <option>Aisle 7 · Bay 1</option>
+          <option>Overflow</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-actions">
+      <button id="add" class="primary">Add line</button>
+      <button id="clear">Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>SKU</th><th>Description</th><th>Qty</th><th>Unit cost</th>
+            <th>Supplier</th><th>Location</th></tr>
+      </thead>
+      <tbody id="lines">
+        <tr><td colspan="6" class="empty">No lines yet.</td></tr>
+      </tbody>
+    </table>
+    <div class="row-actions">
+      <button id="submit" class="primary">Submit intake</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast">Intake submitted — 1 line recorded.</div>
+
+<script>
+// The page can be driven either by a human or by ?s=N, which replays the first N
+// actions of a session so a recording can be captured frame by frame.
+const ACTIONS = [
+  () => { set('sku', 'BRK-2041'); },
+  () => { set('desc', 'Brake pad set, front'); },
+  () => { set('qty', '12'); },
+  () => { set('cost', '18.40'); },
+  () => { set('supplier', 'Northwind Supply'); },
+  () => { set('location', 'Aisle 4 · Bay 2'); },
+  () => { document.getElementById('add').click(); },
+  () => { set('sku', 'FLT-1180'); },
+  () => { set('desc', 'Oil filter, spin-on'); },
+  () => { set('qty', '40'); },
+  () => { set('cost', '6.25'); },
+  () => { set('supplier', 'Bergen Parts'); },
+  () => { set('location', 'Aisle 7 · Bay 1'); },
+  () => { document.getElementById('add').click(); },
+  () => { document.getElementById('submit').click(); },
+];
+const set = (id, v) => { const el = document.getElementById(id); el.value = v;
+                         el.dispatchEvent(new Event('input', {bubbles:true})); };
+const lines = [];
+function render() {
+  const body = document.getElementById('lines');
+  if (!lines.length) {
+    body.innerHTML = '<tr><td colspan="6" class="empty">No lines yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = lines.map(l => `<tr><td>${l.sku}</td><td>${l.desc}</td>
+      <td>${l.qty}</td><td>$${l.cost}</td><td>${l.supplier}</td>
+      <td>${l.location}</td></tr>`).join('');
+}
+document.getElementById('add').addEventListener('click', () => {
+  const g = id => document.getElementById(id).value;
+  if (!g('sku')) return;
+  lines.push({sku:g('sku'), desc:g('desc'), qty:g('qty'), cost:g('cost'),
+              supplier:g('supplier'), location:g('location')});
+  render();
+  ['sku','desc','qty','cost'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('supplier').value = '';
+  document.getElementById('location').value = '';
+});
+document.getElementById('clear').addEventListener('click', () => {
+  ['sku','desc','qty','cost'].forEach(id => document.getElementById(id).value = '');
+});
+document.getElementById('submit').addEventListener('click', () => {
+  document.getElementById('toast').classList.add('show');
+  window.__submitted = {lines: JSON.parse(JSON.stringify(lines))};
+});
+
+const s = parseInt(new URLSearchParams(location.search).get('s') || '0', 10);
+for (let i = 0; i < s && i < ACTIONS.length; i++) ACTIONS[i]();
+render();
+</script>
+</body>
+</html>
