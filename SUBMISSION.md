@@ -15,6 +15,23 @@ checklist
     [x] Certificate command in main | merged from feature/certificate, trajectory gzipped
 ```
 
+## What has been built and where the evidence is
+
+| work | evidence | state |
+|---|---|---|
+| Four tasks on four app shapes: repeat-form (Stockroom), single form (VendorDesk), checkout across three rows (saucedemo.com, not ours), find-and-change (HelpDesk triage) | `results/submission/*/report.md` and `certificate.html`; 9 calls, $0.026179 in `trace.md` | done |
+| Submission form read from the live page: 3,000-character caps on the three write-ups, demo video is a **link not an upload**, images ≤10 MB, trajectory must be `.json` | "The form, read from the live page" below | done |
+| Code audit, edge cases and performance | `docs/AUDIT.md`, ten findings each with a reproduction | done |
+| Muse made the corrections the audit asked for | `prompts/fix-audit.md` + `prompts/audit-fixes-trajectory.json.gz`; 28 new tests | done |
+| Dependency audit | `tools/dependency_audit.py`, `docs/dependencies.json`: 10 packages, zero OSV advisories, all permissive | done |
+| Muse pinned the dependencies against drift | `prompts/pin-dependencies.md` + `prompts/pin-deps-trajectory.json.gz`; `tests/test_requirements.py` fails on any open range | done |
+| CI failures resolved | `prompts/fix-ci-browsers.md`; a missing Chromium is no longer reported as a dead app, browser tests skip in a fresh clone, and CI installs Chromium | done |
+| Browser download cached in CI | `.github/workflows/check.yml` keyed on `requirements.lock.txt`; cold run 36 s, cache-hit run 35 s with the download step skipped, versus 8m15s before | done |
+| Demo footage re-recorded after the fixes | `results/broll/`: sauce (3 rows) and triage (2 tickets) at real speed, paced and half-speed, listed with timings in `docs/DEMO.md` | done |
+| Commit convention recording each prompt | `AGENTS.md`, `PROMPTS.md`, `tools/commit.sh`; 47/47 commits carry a `Prompt to Muse:` line | done |
+| 3-minute demo video | not recorded — `docs/DEMO.md` is the shot list | **yours** |
+| Usage screenshot for the whole window | `results/usage/usage-2026-11-24.png` covers Nov 23–24; re-take on Dec 2 | **yours, on Dec 2** |
+
 ## Description, for the form
 
 **rote — show it once, and it proves it can do it forever.**
