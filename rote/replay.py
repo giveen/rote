@@ -31,14 +31,30 @@ class ReplayResult:
     error: str | None = None
     end_state: Any = None
     page_text: str = ""
+    inventory: dict = field(default_factory=dict)
     screenshot: Path | None = None
     seconds: float = 0.0
 
-    def as_evidence(self, limit: int = 1200) -> str:
-        """What the repair loop gets to see: facts, not the whole page."""
+    def as_evidence(self, limit: int = 900) -> str:
+        """What the repair loop gets to see: facts, and the app's real interface."""
         lines = [f"error: {self.error}"] if self.error else []
         for c in self.checks:
             lines.append(f"{'PASS' if c.ok else 'FAIL'} {c.name}: {c.detail}")
+        if self.inventory:
+            inv = self.inventory
+            if inv.get("labels"):
+                lines.append("form controls actually on the page: "
+                             + ", ".join(inv["labels"]))
+            if inv.get("buttons"):
+                lines.append("buttons actually on the page: " + ", ".join(inv["buttons"]))
+            for label, options in (inv.get("selects") or {}).items():
+                lines.append(f"options in {label!r}: " + ", ".join(options))
+            odd = {k: v for k, v in (inv.get("details") or {}).items()
+                   if v.get("type") not in ("text", "number", "select")
+                   or (v.get("value") and not v.get("valid"))}
+            for label, d in odd.items():
+                lines.append(f"control {label!r} is <input type={d['type']}> and holds "
+                             f"{d['value']!r} (valid={d['valid']})")
         if self.page_text:
             lines.append("page text after the run:\n" + self.page_text[:limit])
         return "\n".join(lines)
@@ -76,6 +92,7 @@ def replay(script: Path, url: str, rows: list[dict[str, str]], *,
         try:
             res.end_state = page.evaluate("() => window.__submitted ?? null")
             res.page_text = page.inner_text("body")
+            res.inventory = inventory(page)
         except Exception as e:
             res.error = res.error or f"could not read the page: {e}"
         if screenshot:
@@ -93,32 +110,119 @@ def replay(script: Path, url: str, rows: list[dict[str, str]], *,
     return res
 
 
+TRUE_WORDS = ("true", "yes", "y", "on", "1", "checked", "enabled")
+FALSE_WORDS = ("false", "no", "off", "0", "unchecked", "disabled")
+
+
+def _norm(value: Any) -> tuple[str, Any]:
+    """Typed comparison. An app renders a ticked box as 'yes', 'true', 'on' or a check
+    mark depending on who wrote it, so booleans must not be compared as raw strings —
+    that is how a verifier ends up calling a correct run a failure."""
+    text = " ".join(str(value).split()).lower()
+    if text in TRUE_WORDS:
+        return ("bool", True)
+    if text in FALSE_WORDS:
+        return ("bool", False)
+    return ("text", text)
+
+
+def _matches(want: Any, candidates: list[str]) -> bool:
+    kind, norm = _norm(want)
+    if kind == "bool":
+        words = TRUE_WORDS if norm else FALSE_WORDS
+        return any(c in words for c in candidates)
+    return any(norm in " ".join(c.split()) or " ".join(c.split()) in norm
+               for c in candidates if c)
+
+
 def _judge_effect(end_state: Any, page_text: str, rows: list[dict[str, str]]) -> list[Check]:
-    """The effect checks: did the app end up holding the data we sent, exactly?"""
+    """The effect checks: did the app end up holding the data we sent?
+
+    Deliberately tolerant about *how* an app renders a value, strict about whether it did.
+    """
     checks: list[Check] = []
-    haystack = " ".join(page_text.split()).lower()
+    tokens = [" ".join(page_text.split()).lower()]
+    flat = " ".join(page_text.split()).lower()
 
     missing = []
     for i, row in enumerate(rows):
         for key, value in row.items():
-            if str(value).strip().lower() not in haystack:
+            kind, norm = _norm(value)
+            if kind == "bool":
+                present = any(w in flat.split() or w in flat for w in
+                              (TRUE_WORDS if norm else FALSE_WORDS))
+            else:
+                present = str(norm) in flat
+            if not present:
                 missing.append(f"row {i + 1} {key}={value!r}")
     checks.append(Check("every value reached the page", not missing,
-                        "all " + str(sum(len(r) for r in rows)) + " values found"
-                        if not missing else "missing: " + ", ".join(missing[:6])))
+                        f"all {sum(len(r) for r in rows)} values found" if not missing
+                        else "missing: " + ", ".join(missing[:6])))
 
-    if isinstance(end_state, dict) and "lines" in end_state:
-        got = end_state["lines"]
-        same_shape = len(got) == len(rows)
-        matched = 0
-        for want, have in zip(rows, got):
-            if all(str(want.get(k, "")).strip().lower() == str(have.get(k2, "")).strip().lower()
-                   for k, k2 in zip(want.keys(), have.keys())):
-                matched += 1
-        checks.append(Check(
-            "the app stored exactly the rows we sent", same_shape and matched == len(rows),
-            f"{matched}/{len(rows)} rows stored as sent"
-            + ("" if same_shape else f", {len(got)} rows in the app")))
+    records = _records(end_state)
+    if records is not None:
+        if len(records) != len(rows):
+            checks.append(Check("the app stored exactly the rows we sent", False,
+                                f"sent {len(rows)} row(s), the app holds {len(records)}"))
+        else:
+            bad = 0
+            for i, (row, record) in enumerate(zip(rows, records)):
+                candidates = [str(v).strip().lower() for v in record.values()]
+                if not all(_matches(v, candidates) for v in row.values()):
+                    bad += 1
+            checks.append(Check("the app stored exactly the rows we sent", bad == 0,
+                                f"{len(rows) - bad}/{len(rows)} rows stored as sent"))
         checks.append(Check("the task was submitted", True,
-                            f"{len(got)} line(s) confirmed by the app"))
+                            f"{len(records)} record(s) confirmed by the app"))
     return checks
+
+
+def _records(end_state: Any) -> list[dict] | None:
+    """Whatever the app says it now holds, if it says anything."""
+    if isinstance(end_state, dict):
+        for key in ("lines", "vendors", "records", "items", "entries", "rows"):
+            value = end_state.get(key)
+            if isinstance(value, list):
+                return [v for v in value if isinstance(v, dict)]
+        if all(isinstance(v, dict) for v in end_state.values()) and end_state:
+            return list(end_state.values())
+    return None
+
+
+INVENTORY_JS = """() => {
+  const clean = (s) => (s || "").replace(/\\s+/g, " ").trim();
+  const labels = [];
+  const details = {};
+  for (const el of document.querySelectorAll("input, select, textarea")) {
+    const byFor = el.id ? document.querySelector(`label[for="${el.id}"]`) : null;
+    const wrap = el.closest("label");
+    const name = clean(byFor?.textContent || wrap?.textContent || el.getAttribute("aria-label")
+                       || el.getAttribute("placeholder") || el.getAttribute("name") || "");
+    if (name) {
+      labels.push(name);
+      const type = el.tagName === "SELECT" ? "select" : (el.getAttribute("type") || "text");
+      details[name] = {type, value: el.value, valid: el.checkValidity ? el.checkValidity() : true};
+    }
+  }
+  const buttons = [];
+  for (const b of document.querySelectorAll("button, [role=button], input[type=submit]")) {
+    const t = clean(b.textContent || b.value || b.getAttribute("aria-label") || "");
+    if (t) buttons.push(t);
+  }
+  const selects = {};
+  for (const el of document.querySelectorAll("select")) {
+    const byFor = el.id ? document.querySelector(`label[for="${el.id}"]`) : null;
+    const wrap = el.closest("label");
+    const name = clean(byFor?.textContent || wrap?.textContent || el.getAttribute("name") || "");
+    selects[name] = [...el.options].map(o => clean(o.textContent)).filter(Boolean);
+  }
+  return {labels, buttons, selects, details};
+}"""
+
+
+def inventory(page) -> dict:
+    """What the app actually offers: labels, buttons, and each dropdown's options."""
+    try:
+        return page.evaluate(INVENTORY_JS)
+    except Exception:
+        return {}

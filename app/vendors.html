@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VendorDesk — New vendor</title>
+<style>
+  :root { --bg:#f4f6fa; --panel:#fff; --line:#dfe4ec; --text:#151922; --muted:#5d6675;
+          --accent:#0f7b6c; --ink:#0b3b35; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+         background:var(--bg); color:var(--text); }
+  nav { display:flex; gap:20px; align-items:center; padding:12px 26px;
+        background:var(--ink); color:#dff3ef; font-size:13px; }
+  nav b { font-size:15px; letter-spacing:.3px; }
+  nav a { color:#9fd8ce; text-decoration:none; }
+  main { max-width:1000px; margin:28px auto; padding:0 22px; display:grid;
+         grid-template-columns:1.35fr .9fr; gap:22px; align-items:start; }
+  h1 { font-size:19px; margin:0 0 2px; }
+  .sub { color:var(--muted); margin:0 0 18px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px;
+          padding:20px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px;
+          font-weight:500; }
+  input, select, textarea { width:100%; padding:9px 10px; border:1px solid var(--line);
+          border-radius:9px; font-size:14px; background:#fbfcfe; color:var(--text);
+          font-family:inherit; }
+  textarea { min-height:76px; resize:vertical; }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent);
+          border-color:var(--accent); background:#fff; }
+  .check { display:flex; align-items:center; gap:9px; margin:4px 0 16px; }
+  .check input { width:16px; height:16px; accent-color:var(--accent); }
+  .check label { margin:0; font-size:13px; color:var(--text); font-weight:400; }
+  button { padding:10px 18px; border-radius:9px; border:1px solid var(--accent);
+           background:var(--accent); color:#fff; font-weight:600; font-size:14px;
+           cursor:pointer; }
+  button.ghost { background:#fff; color:var(--accent); }
+  .side h2 { font-size:13px; text-transform:uppercase; letter-spacing:.6px;
+             color:var(--muted); margin:0 0 12px; }
+  .done { display:none; }
+  .done.show { display:block; }
+  dl { margin:0; font-size:13px; }
+  dt { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.4px;
+       margin-top:10px; }
+  dd { margin:2px 0 0; }
+  .banner { display:none; margin-bottom:14px; padding:11px 13px; border-radius:10px;
+            background:#e6f5f1; border:1px solid #9ad3c7; color:#0b3b35; font-size:13px; }
+  .banner.show { display:block; }
+  @media (max-width: 760px) {
+    main { grid-template-columns:1fr; padding:0 14px; }
+    .row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<nav><b>VendorDesk</b> <a href="#">Vendors</a> <a href="#">Contracts</a>
+     <a href="#">Payments</a></nav>
+
+<main>
+  <section class="card">
+    <div class="banner" id="banner">Vendor created and welcome pack queued.</div>
+    <h1>New vendor</h1>
+    <p class="sub">Onboard a supplier before the first purchase order.</p>
+
+    <div class="row">
+      <div>
+        <label for="company">Company name</label>
+        <input id="company" placeholder="Nordlicht Logistik GmbH">
+      </div>
+      <div>
+        <label for="country">Country</label>
+        <select id="country">
+          <option value="">Select a country</option>
+          <option>Germany</option><option>France</option>
+          <option>Spain</option><option>Japan</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="start">Contract start</label>
+        <input id="start" type="date">
+      </div>
+      <div>
+        <label for="spend">Annual spend</label>
+        <input id="spend" type="number" placeholder="0">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="">Select a category</option>
+          <option>Logistics</option><option>Components</option><option>Packaging</option>
+        </select>
+      </div>
+      <div>
+        <label for="ref">Internal reference</label>
+        <input id="ref" placeholder="VD-0000">
+      </div>
+    </div>
+
+    <div class="row" style="grid-template-columns:1fr">
+      <div>
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Anything the buyer should know"></textarea>
+      </div>
+    </div>
+
+    <div class="check">
+      <input type="checkbox" id="welcome">
+      <label for="welcome">Send welcome pack</label>
+    </div>
+
+    <button id="create">Create vendor</button>
+    <button id="cancel" class="ghost">Cancel</button>
+  </section>
+
+  <aside class="card side">
+    <h2>Created</h2>
+    <p class="sub" id="empty">No vendors created yet in this session.</p>
+    <div class="done" id="done">
+      <dl id="summary"></dl>
+    </div>
+  </aside>
+</main>
+
+<script>
+const created = [];
+const ACTIONS = [
+  () => set('company', 'Nordlicht Logistik GmbH'),
+  () => set('country', 'Germany'),
+  () => set('start', '2026-03-01'),
+  () => set('spend', '420000'),
+  () => set('category', 'Logistics'),
+  () => set('ref', 'VD-2041'),
+  () => set('notes', 'Preferred carrier for the northern region.'),
+  () => { document.getElementById('welcome').checked = true; },
+  () => document.getElementById('create').click(),
+];
+const set = (id, v) => { const el = document.getElementById(id); el.value = v;
+                         el.dispatchEvent(new Event('input', {bubbles:true})); };
+
+document.getElementById('create').addEventListener('click', () => {
+  const g = id => document.getElementById(id).value;
+  const vendor = { company_name: g('company'), country: g('country'),
+                   contract_start: g('start'), annual_spend: g('spend'),
+                   category: g('category'), reference: g('ref'), notes: g('notes'),
+                   welcome_pack: document.getElementById('welcome').checked };
+  created.push(vendor);
+  document.getElementById('summary').innerHTML = Object.entries(vendor)
+    .map(([k, v]) => `<dt>${k.replace(/_/g,' ')}</dt><dd>${v === true ? 'yes'
+        : v === false ? 'no' : v}</dd>`).join('');
+  document.getElementById('done').classList.add('show');
+  document.getElementById('empty').style.display = 'none';
+  document.getElementById('banner').classList.add('show');
+  window.__submitted = {vendors: JSON.parse(JSON.stringify(created))};
+});
+
+const s = parseInt(new URLSearchParams(location.search).get('s') || '0', 10);
+for (let i = 0; i < s && i < ACTIONS.length; i++) ACTIONS[i]();
+</script>
+</body>
+</html>

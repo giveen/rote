@@ -87,6 +87,31 @@ def _duration(path: Path) -> float:
         return 0.0
 
 
+def vendor_session(url: str, data: dict[str, str], *, name: str = "vendors") -> Session:
+    """The VendorDesk task: one vendor, with a checkbox, a date and a free-text note."""
+    steps = [
+        Step("type", "Company name", data["company"]),
+        Step("select", "Country", data["country"]),
+        Step("type", "Contract start", data["start"]),
+        Step("type", "Annual spend", data["spend"]),
+        Step("select", "Category", data["category"]),
+        Step("type", "Internal reference", data["reference"]),
+        Step("type", "Notes", data["notes"]),
+        Step("check", "Send welcome pack", "yes"),
+        Step("submit", "Create vendor", None),
+    ]
+    return Session(name=name, url=url, steps=steps, rows=[data])
+
+
+def session_from_json(path, name: str | None = None) -> Session:
+    """Any session, described in a file: {"name","url","steps":[{"action","target","value"}],"rows"}"""
+    import json as _json
+    spec = _json.loads(Path(path).read_text())
+    steps = [Step(s["action"], s["target"], s.get("value")) for s in spec["steps"]]
+    return Session(name=name or spec.get("name", "session"), url=spec["url"],
+                   steps=steps, rows=spec.get("rows", []))
+
+
 def intake_session(url: str, rows: list[dict[str, str]], *, name: str = "intake") -> Session:
     """The stockroom task: type each received line, then submit the intake."""
     steps: list[Step] = []

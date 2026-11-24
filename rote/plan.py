@@ -38,7 +38,7 @@ PLAN_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "action": {"type": "string",
                                "enum": ["type", "select", "click", "submit",
-                                        "navigate", "read"]},
+                                        "navigate", "read", "check", "uncheck"]},
                     "target": {"type": "string"},
                     "value": {"type": ["string", "null"]},
                     "note": {"type": "string"},

@@ -53,6 +53,9 @@ def perform(page: Page, action: str, target: str, value: str | None) -> None:
             loc.select_option(value or "")
     elif action in ("click", "submit"):
         button(page, target).click()
+    elif action in ("check", "uncheck"):
+        loc = field(page, target)
+        (loc.check if action == "check" else loc.uncheck)()
     elif action == "read":
         pass
     else:

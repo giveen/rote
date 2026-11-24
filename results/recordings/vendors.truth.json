@@ -1,0 +1,77 @@
+{
+  "name": "vendors",
+  "url": "http://127.0.0.1:8765/vendors.html",
+  "seconds": 7.27,
+  "steps": [
+    {
+      "action": "type",
+      "target": "Company name",
+      "value": "Nordlicht Logistik GmbH"
+    },
+    {
+      "action": "select",
+      "target": "Country",
+      "value": "Germany"
+    },
+    {
+      "action": "type",
+      "target": "Contract start",
+      "value": "2026-03-01"
+    },
+    {
+      "action": "type",
+      "target": "Annual spend",
+      "value": "420000"
+    },
+    {
+      "action": "select",
+      "target": "Category",
+      "value": "Logistics"
+    },
+    {
+      "action": "type",
+      "target": "Internal reference",
+      "value": "VD-2041"
+    },
+    {
+      "action": "type",
+      "target": "Notes",
+      "value": "Preferred carrier for the northern region."
+    },
+    {
+      "action": "check",
+      "target": "Send welcome pack",
+      "value": "yes"
+    },
+    {
+      "action": "submit",
+      "target": "Create vendor",
+      "value": null
+    }
+  ],
+  "rows": [
+    {
+      "company": "Nordlicht Logistik GmbH",
+      "country": "Germany",
+      "start": "2026-03-01",
+      "spend": "420000",
+      "category": "Logistics",
+      "reference": "VD-2041",
+      "notes": "Preferred carrier for the northern region."
+    }
+  ],
+  "end_state": {
+    "vendors": [
+      {
+        "company_name": "Nordlicht Logistik GmbH",
+        "country": "Germany",
+        "contract_start": "2026-03-01",
+        "annual_spend": "420000",
+        "category": "Logistics",
+        "reference": "VD-2041",
+        "notes": "Preferred carrier for the northern region.",
+        "welcome_pack": true
+      }
+    ]
+  }
+}

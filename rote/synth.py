@@ -44,6 +44,48 @@ def _button(page: Page, name: str):
     raise LookupError(f"no button named {{name!r}} on {{page.url}}")
 
 
+def _truthy(value) -> bool:
+    return str(value).strip().lower() in ("1", "true", "yes", "y", "on", "checked")
+
+
+def _tick(page: Page, label: str, want: bool, action: str) -> None:
+    control = _field(page, label)
+    (control.check if want else control.uncheck)()
+
+
+DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
+
+
+def _to_iso_date(value: str) -> str | None:
+    """Only formats with no ambiguity. 03/01/2026 is refused on purpose: it is either
+    March 1st or January 3rd, and silently picking one corrupts the user's data."""
+    from datetime import datetime
+    text = str(value).strip()
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def _fill(page: Page, label: str, value: str) -> None:
+    """Fill a control, giving a date input the form it actually accepts."""
+    control = _field(page, label)
+    kind = (control.get_attribute("type") or "text").lower()
+    text = "" if value is None else str(value)
+    if kind == "date":
+        iso = _to_iso_date(text)
+        if not iso:
+            raise ValueError(f"{{label!r}} is a date field; {{text!r}} is not an "
+                             f"unambiguous date. Give it YYYY-MM-DD.")
+        control.fill(iso)
+        if not control.input_value():
+            raise ValueError(f"the date field {{label!r}} rejected {{iso!r}}")
+        return
+    control.fill(text)
+
+
 def _select(page: Page, label: str, value: str) -> None:
     """Choose an option, and say which ones exist when the value is not among them."""
     control = _field(page, label)
@@ -80,12 +122,20 @@ def _line(step: Step, indent: str = "    ") -> str:
     key = _placeholder(step)
     if step.action == "type":
         expr = f'row[_key(row, {_py_str(key)})]' if key else _py_str(step.value or "")
-        return f"{indent}_field(page, {_py_str(step.target)}).fill({expr})"
+        return f"{indent}_fill(page, {_py_str(step.target)}, {expr})"
     if step.action == "select":
         expr = f'row[_key(row, {_py_str(key)})]' if key else _py_str(step.value or "")
         return f"{indent}_select(page, {_py_str(step.target)}, {expr})"
     if step.action in ("click", "submit"):
         return f"{indent}_button(page, {_py_str(step.target)}).click()"
+    if step.action in ("check", "uncheck"):
+        key = _placeholder(step)
+        if key:
+            expr = f'_truthy(row[_key(row, {_py_str(key)})])'
+        else:
+            expr = _py_str("true" if step.action == "check" else "false")
+        return (f"{indent}_tick(page, {_py_str(step.target)}, {expr}, "
+                f"{_py_str(step.action)})")
     if step.action == "navigate":
         return f'{indent}page.goto({_py_str(step.value or "")})'
     if step.action == "read":

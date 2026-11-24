@@ -2,6 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 node_modules/
-results/frames/
-results/*.mp4
+**/raw/
+**/*.webm
 .DS_Store

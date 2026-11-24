@@ -1,0 +1,222 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/vendors.mp4",
+  "plan": {
+    "app": "VendorDesk",
+    "goal": "Create a new vendor on the 'New vendor' form, onboarding a supplier before the first purchase order and sending a welcome pack.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "Nordlicht Logistik GmbH",
+        "label": "Company name"
+      },
+      {
+        "control": "select",
+        "example": "Germany",
+        "label": "Country"
+      },
+      {
+        "control": "text",
+        "example": "2026-03-01",
+        "label": "Contract start"
+      },
+      {
+        "control": "number",
+        "example": "420000",
+        "label": "Annual spend"
+      },
+      {
+        "control": "select",
+        "example": "Logistics",
+        "label": "Category"
+      },
+      {
+        "control": "text",
+        "example": "VD-2041",
+        "label": "Internal reference"
+      },
+      {
+        "control": "text",
+        "example": "Preferred carrier for the northern region.",
+        "label": "Notes"
+      },
+      {
+        "control": "checkbox",
+        "example": "yes",
+        "label": "Send welcome pack"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "company_name",
+            "value": "Nordlicht Logistik GmbH"
+          },
+          {
+            "field": "country",
+            "value": "Germany"
+          },
+          {
+            "field": "contract_start",
+            "value": "03/01/2026"
+          },
+          {
+            "field": "annual_spend",
+            "value": "420000"
+          },
+          {
+            "field": "category",
+            "value": "Logistics"
+          },
+          {
+            "field": "internal_reference",
+            "value": "VD-2041"
+          },
+          {
+            "field": "notes",
+            "value": "Preferred carrier for the northern region."
+          },
+          {
+            "field": "send_welcome_pack",
+            "value": "yes"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Company name",
+        "value": "{company_name}",
+        "note": "At the start the field already shows this text in light grey and is then focused, so it is ambiguous whether it was pre-filled, placeholder text, or typed just before; enter this value to reproduce the result.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Country",
+        "value": "{country}",
+        "note": "Choose this option from the 'Select a country' dropdown.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Contract start",
+        "value": "{contract_start}",
+        "note": "Enter in YYYY-MM-DD format accepted by the date input, regardless of the mm/dd/yyyy display; the CREATED panel displays it as 2026-03-01.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Annual spend",
+        "value": "{annual_spend}",
+        "note": "Replaces the default 0; enter a plain number without commas or currency symbol.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Category",
+        "value": "{category}",
+        "note": "Choose this option from the 'Select a category' dropdown.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Internal reference",
+        "value": "{internal_reference}",
+        "note": "Replaces the default VD-0000 shown in the field.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Notes",
+        "value": "{notes}",
+        "note": "Multi-line text field with placeholder 'Anything the buyer should know'.",
+        "scope": "each_row"
+      },
+      {
+        "action": "check",
+        "target": "Send welcome pack",
+        "value": "{send_welcome_pack}",
+        "note": "Set the checkbox from the row value via {send_welcome_pack}; check it when the row value is true/yes so the row value reaches the page as true. A bare check with no value only yields 'on' and leaves send_welcome_pack unused, as shown by the missing send_welcome_pack='true' in the run.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Create vendor",
+        "value": null,
+        "note": "Submit the form by clicking the 'Create vendor' button (not 'Cancel').",
+        "scope": "once"
+      }
+    ],
+    "expected_effect": "A green banner 'Vendor created and welcome pack queued.' appears at the top of the New vendor form, and the right-hand CREATED panel changes from 'No vendors created yet in this session.' to show the created vendor's company name, country, contract start (2026-03-01), annual spend, category, internal reference, notes, and welcome pack: yes. The entered form values remain visible."
+  },
+  "script": "results/learn_vendors/vendors.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "1 row(s) through vendors.py"
+        },
+        {
+          "name": "every value reached the page",
+          "ok": false,
+          "detail": "missing: row 1 send_welcome_pack='true'"
+        }
+      ],
+      "error": null,
+      "cost": 0.001800632
+    },
+    {
+      "attempt": 1,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "1 row(s) through vendors.py"
+        },
+        {
+          "name": "every value reached the page",
+          "ok": false,
+          "detail": "missing: row 1 send_welcome_pack='true'"
+        }
+      ],
+      "error": null,
+      "cost": 0.00736462
+    },
+    {
+      "attempt": 2,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "1 row(s) through vendors.py"
+        },
+        {
+          "name": "every value reached the page",
+          "ok": false,
+          "detail": "missing: row 1 send_welcome_pack='true'"
+        }
+      ],
+      "error": null,
+      "cost": 0.013923432
+    }
+  ],
+  "passed": false,
+  "ledger": {
+    "calls": 3,
+    "spent_usd": 0.013923,
+    "input_tokens": 5717,
+    "cached_tokens": 2758,
+    "output_tokens": 27233,
+    "reasoning_tokens": 24463,
+    "cache_hit_pct": 48.2
+  },
+  "elapsed_s": 60.5,
+  "fresh_data": true
+}

@@ -1,0 +1,6 @@
+[
+ {"sku": "GSK-7781", "description": "Gasket, exhaust manifold", "quantity": "6",
+  "unit_cost": "42.10", "supplier": "Acme Industrial", "location": "Aisle 7 · Bay 1"},
+ {"sku": "SPK-0032", "description": "Spark plug, iridium", "quantity": "24",
+  "unit_cost": "9.95", "supplier": "Bergen Parts", "location": "Overflow"}
+]
