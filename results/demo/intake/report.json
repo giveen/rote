@@ -98,56 +98,56 @@
         "action": "type",
         "target": "SKU",
         "value": "{sku}",
-        "note": "",
+        "note": "Enter the part SKU for the line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Description",
         "value": "{description}",
-        "note": "",
+        "note": "Enter the description for the line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Quantity",
         "value": "{quantity}",
-        "note": "",
+        "note": "Enter the quantity received for the line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Unit cost",
         "value": "{unit_cost}",
-        "note": "",
+        "note": "Enter the cost per unit for the line.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Supplier",
         "value": "{supplier}",
-        "note": "Dropdown shows 'Choose...' before selection.",
+        "note": "Choose the supplier for the line.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Location",
         "value": "{location}",
-        "note": "Dropdown shows 'Choose...' before selection.",
+        "note": "Choose the storage location for the line.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Add line",
         "value": null,
-        "note": "Adds the line to the table below and clears the form for the next line.",
+        "note": "Add the completed line to the intake table; the entry form then clears for the next line.",
         "scope": "each_row"
       },
       {
         "action": "submit",
         "target": "Submit intake",
         "value": null,
-        "note": "",
+        "note": "Submit the intake after all lines have been added.",
         "scope": "once"
       }
     ],
@@ -155,7 +155,7 @@
       "first": 1,
       "last": 7
     },
-    "expected_effect": "The intake table lists the added lines with SKU, description, quantity, unit cost, supplier and location, the entry form is cleared, and a toast 'Intake submitted \u2014 2 lines recorded.' appears at the bottom right."
+    "expected_effect": "The intake table lists each entered line with its SKU, description, quantity, unit cost, supplier and location, and an 'Intake submitted \u2014 2 lines recorded.' confirmation appears at the bottom right."
   },
   "script": "results/demo/intake/intake.py",
   "attempts": [
@@ -195,7 +195,7 @@
         }
       ],
       "error": null,
-      "cost": 0.001032392
+      "cost": 0.0008893919999999999
     },
     {
       "attempt": 1,
@@ -233,19 +233,19 @@
         }
       ],
       "error": null,
-      "cost": 0.003184216
+      "cost": 0.007051116
     }
   ],
   "passed": true,
   "ledger": {
     "calls": 2,
-    "spent_usd": 0.003184,
-    "input_tokens": 4871,
+    "spent_usd": 0.007051,
+    "input_tokens": 4910,
     "cached_tokens": 3504,
-    "output_tokens": 6067,
-    "reasoning_tokens": 4820,
-    "cache_hit_pct": 71.9
+    "output_tokens": 13793,
+    "reasoning_tokens": 12468,
+    "cache_hit_pct": 71.4
   },
-  "elapsed_s": 17.1,
+  "elapsed_s": 34.9,
   "fresh_data": true
 }

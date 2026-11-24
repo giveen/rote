@@ -1,7 +1,7 @@
 """Automation for VendorDesk, written by rote from vendors.mp4.
 
-Procedure: Onboard a new vendor using the New vendor form
-What success looks like: A success banner 'Vendor created and welcome pack queued.' appears at the top of the form, and the CREATED panel on the right lists the new vendor's company name, country, contract start, annual spend, category, reference, notes, and welcome pack status.
+Procedure: Onboard and create a new vendor
+What success looks like: A banner reading 'Vendor created and welcome pack queued.' appears at the top of the New vendor form and the Created panel on the right lists the entered company name, country, contract start as 2026-03-01, annual spend, category, internal reference, notes, and welcome pack yes.
 
 Data comes in through `rows`: one dict per repetition, keyed by `company_name`, `country`, `contract_start`, `annual_spend`, `category`, `internal_reference`, `notes`, `send_welcome_pack`.
 No model is involved in running this file.

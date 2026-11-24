@@ -2,18 +2,8 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/sauce.mp4",
   "plan": {
     "app": "Swag Labs",
-    "goal": "Log in, add the Sauce Labs Backpack to the cart, and complete checkout to place the order.",
+    "goal": "Log in, add the Sauce Labs Backpack to the cart, and proceed through checkout to the order overview page.",
     "fields": [
-      {
-        "control": "text",
-        "example": "standard_user",
-        "label": "Username"
-      },
-      {
-        "control": "text",
-        "example": "secret_sauce",
-        "label": "Password"
-      },
       {
         "control": "text",
         "example": "Ada",
@@ -26,21 +16,13 @@
       },
       {
         "control": "text",
-        "example": "24070",
+        "example": "21037",
         "label": "Zip/Postal Code"
       }
     ],
     "rows": [
       {
         "cells": [
-          {
-            "field": "username",
-            "value": "standard_user"
-          },
-          {
-            "field": "password",
-            "value": "secret_sauce"
-          },
           {
             "field": "first_name",
             "value": "Ada"
@@ -51,7 +33,7 @@
           },
           {
             "field": "zip_postal_code",
-            "value": "24070"
+            "value": "21037"
           }
         ]
       }
@@ -61,85 +43,85 @@
         "action": "type",
         "target": "Username",
         "value": "standard_user",
-        "note": "Enter the username on the login form.",
+        "note": "Enter the username on the Swag Labs login page. Use the fixed login credential from the recording, not per-row data.",
         "scope": "once"
       },
       {
         "action": "type",
         "target": "Password",
         "value": "secret_sauce",
-        "note": "Enter the password on the login form.",
+        "note": "Enter the password. The login page states the password for all users is secret_sauce. Use the fixed login credential from the recording, not per-row data.",
         "scope": "once"
       },
       {
         "action": "click",
         "target": "Login",
         "value": null,
-        "note": "Submit the login credentials to open the Products page.",
+        "note": "Submit the login form and open the Products page.",
         "scope": "once"
       },
       {
         "action": "click",
         "target": "Add to cart",
         "value": null,
-        "note": "The 'Add to cart' button for the Sauce Labs Backpack ($29.99), the first product listed.",
-        "scope": "each_row"
+        "note": "Click the Add to cart button under Sauce Labs Backpack ($29.99) on the Products page.",
+        "scope": "once"
       },
       {
         "action": "click",
         "target": "Cart",
         "value": null,
-        "note": "The cart link at the top right of the page; its accessible name changes with the item count, so use the stable 'Cart' name.",
-        "scope": "each_row"
+        "note": "Open the cart using the Cart link at the top right. After adding an item its badge shows 1 item, so it is named by the stable part Cart.",
+        "scope": "once"
       },
       {
         "action": "click",
         "target": "Checkout",
         "value": null,
-        "note": "Proceed from the Your Cart page to checkout.",
-        "scope": "each_row"
+        "note": "Proceed from the Your Cart page to checkout information.",
+        "scope": "once"
       },
       {
         "action": "type",
         "target": "First Name",
         "value": "{first_name}",
-        "note": "First input on the Checkout: Your Information form.",
+        "note": "Enter the first name on Checkout: Your Information.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Last Name",
         "value": "{last_name}",
-        "note": "Second input on the Checkout: Your Information form.",
+        "note": "Enter the last name on Checkout: Your Information.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Zip/Postal Code",
         "value": "{zip_postal_code}",
-        "note": "Third input on the Checkout: Your Information form.",
+        "note": "Enter the zip/postal code. The digits are small in the recording, so the row value is the best reading shown; confirm the exact original zip if it matters for a repeat.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Continue",
         "value": null,
-        "note": "Proceed to the Checkout: Overview page to review payment, shipping, and price total.",
+        "note": "Submit the checkout information and proceed to the order overview. The recording ends on that overview page; the Finish button is visible there but no Finish click is shown.",
         "scope": "each_row"
       },
       {
-        "action": "submit",
-        "target": "Finish",
+        "action": "read",
+        "target": "Checkout: Overview",
         "value": null,
-        "note": "Place the order from the Checkout: Overview page.",
-        "scope": "once"
+        "note": "Verify the Checkout: Overview page shows the backpack, payment and shipping information, and the $32.39 total.",
+        "scope": "each_row"
       }
     ],
     "repeat": {
-      "first": 4,
-      "last": 10
+      "first": 7,
+      "last": 11
     },
-    "expected_effect": "The Checkout: Complete page is displayed with 'Thank you for your order!' and a message that the order has been dispatched."
+    "expected_effect": "The Checkout: Overview page is shown listing Sauce Labs Backpack ($29.99), Payment Information: SauceCard #31337, Shipping Information: Free Pony Express Delivery, and Price Total: $32.39 (Item total: $29.99, Tax: $2.40, Total: $32.39), with Cancel and Finish buttons visible."
   },
   "script": "results/submission/sauce/sauce.py",
   "attempts": [
@@ -165,11 +147,11 @@
         {
           "name": "the app reached the state the recording ended in",
           "ok": false,
-          "detail": "expected something like \"The Checkout: Complete page is displayed with 'Thank you for your order!' and a message that the order has been dispatch\""
+          "detail": "expected something like 'The Checkout: Overview page is shown listing Sauce Labs Backpack ($29.99), Payment Information: SauceCard #31337, Shippi'"
         }
       ],
       "error": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\"",
-      "cost": 0.0018894959999999998
+      "cost": 0.004301496
     },
     {
       "attempt": 1,
@@ -197,19 +179,19 @@
         }
       ],
       "error": null,
-      "cost": 0.00510932
+      "cost": 0.00956862
     }
   ],
   "passed": true,
   "ledger": {
     "calls": 2,
-    "spent_usd": 0.005109,
-    "input_tokens": 3829,
+    "spent_usd": 0.009569,
+    "input_tokens": 3957,
     "cached_tokens": 2480,
-    "output_tokens": 9929,
-    "reasoning_tokens": 8443,
-    "cache_hit_pct": 64.8
+    "output_tokens": 18822,
+    "reasoning_tokens": 17291,
+    "cache_hit_pct": 62.7
   },
-  "elapsed_s": 24.9,
+  "elapsed_s": 45.3,
   "fresh_data": true
 }

@@ -22,7 +22,7 @@ The prompt is one line on purpose: it says what was asked for, and the log stays
 | where | what it is |
 |---|---|
 | `prompts/*.md` | the full brief handed to the model |
-| `prompts/muse-code-trajectory.json` | the session Muse Code exported: every model call and tool call, unedited |
+| `prompts/muse-code-trajectory.json.gz` | the session Muse Code exported: every model call and tool call, unedited |
 | `<run>/trace.md`, `<run>/trace.csv` | per-call tokens and cost at runtime, from the API's own usage object |
 
 ## What is deliberately not here
@@ -32,6 +32,6 @@ it there.
 
 ## Why the trajectory outranks this file
 
-`prompts/muse-code-trajectory.json` is the unedited `/export → Trajectory` output: 1,028
+`prompts/muse-code-trajectory.json.gz` is the unedited `/export → Trajectory` output: 1,028
 events, 31 model calls to `muse-ember-1.0`, every tool call including the failed ones. If this
 document and the trajectory disagree, the trajectory is right.

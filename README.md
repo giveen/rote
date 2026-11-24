@@ -52,18 +52,19 @@ Three tasks, three different apps, fresh data that never appeared in any recordi
 
 | task | app | attempts | model calls | cost | verdict |
 |---|---|---|---|---|---|
-| Parts intake, two lines | Stockroom (ours) | 2 | 2 | $0.00353 | 6/6 checks |
-| New vendor, checkbox + date | VendorDesk (ours) | 1 | 1 | $0.00120 | 6/6 checks |
-| Checkout with login | saucedemo.com (not ours) | 2 | 2 | $0.00511 | 4/4 checks |
-| **total** | | | **5** | **$0.0098** | 3/3 passed |
+| Parts intake, two lines | Stockroom (ours) | fail, fail, pass | 3 | $0.02477 | 6/6 checks |
+| New vendor, checkbox + date | VendorDesk (ours) | pass | 1 | $0.00126 | 6/6 checks |
+| Checkout with login | saucedemo.com (not ours) | fail, pass | 2 | $0.00957 | 4/4 checks |
+| **total** | | | **6** | **$0.0356** | 3/3 passed |
 
-The whole run — reading three recordings, writing three automations, replaying them all — cost
-**under one cent**. Evidence lives in `results/submission/`: `report.md` per task,
-`certificate.html` per task, and `trace.md` with every call's tokens and cost.
+Reading three recordings, writing three automations and replaying them all costs **a few cents**.
+Evidence lives in `results/submission/`: `report.md` per task, `certificate.html` per task, and
+`trace.md` with every call's tokens and cost.
 
-On the first two runs the plan was wrong in different ways (the repeat range missed the click
-that commits a line; the login was treated as per-row data). Both were fixed by the loop, not
-by hand — the repair calls are in the trace.
+The spread is the honest part: the same three tasks have cost between **$0.0098 and $0.0356**
+across runs, because the first plan is sometimes right and sometimes needs repair. The numbers
+above are the committed run; a cheaper one is described in the git history. Paying for a repair
+is still cheaper than a person doing the task twice.
 
 ## What it refuses to do
 

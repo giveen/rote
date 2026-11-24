@@ -1,15 +1,15 @@
 # rote report — intake.mp4
 
 - **2 attempt(s)**, last replay **passed**
-- **$0.00318** over 2 model calls (4,871 in / 6,067 out, 72% cached)
-- wall time 17s
+- **$0.00705** over 2 model calls (4,910 in / 13,793 out, 71% cached)
+- wall time 35s
 - proof data: fresh — never in the recording
 
 ## What it understood
 
 **Goal.** Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting the intake.
 
-**Success looks like.** The intake table lists the added lines with SKU, description, quantity, unit cost, supplier and location, the entry form is cleared, and a toast 'Intake submitted — 2 lines recorded.' appears at the bottom right.
+**Success looks like.** The intake table lists each entered line with its SKU, description, quantity, unit cost, supplier and location, and an 'Intake submitted — 2 lines recorded.' confirmation appears at the bottom right.
 
 | step | action | target | value | scope |
 |---|---|---|---|---|
@@ -72,8 +72,8 @@ After the replay: `proof_attempt2.png`
 
 | what | calls | tokens in | cached | tokens out | $ |
 |---|---|---|---|---|---|
-| intake | 1 | 2,812 | 2,748 | 2,030 | 0.00103 |
-| repair | 1 | 2,059 | 756 | 4,037 | 0.00215 |
+| intake | 1 | 2,812 | 2,748 | 1,744 | 0.00089 |
+| repair | 1 | 2,098 | 756 | 12,049 | 0.00616 |
 
 Raw per-call trace: `results/demo/intake/ledger.jsonl`
 

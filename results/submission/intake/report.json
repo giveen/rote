@@ -2,7 +2,7 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/intake.mp4",
   "plan": {
     "app": "Stockroom",
-    "goal": "Log goods received against a purchase order on the Parts intake page by adding each part as a line and submitting the intake.",
+    "goal": "Log goods received against a purchase order on the Parts intake page by adding one intake line per item and submitting the intake.",
     "fields": [
       {
         "control": "text",
@@ -98,7 +98,7 @@
         "action": "type",
         "target": "SKU",
         "value": "{sku}",
-        "note": "Enter the part SKU.",
+        "note": "Enter the SKU code for the item being received.",
         "scope": "each_row"
       },
       {
@@ -140,22 +140,22 @@
         "action": "click",
         "target": "Add line",
         "value": null,
-        "note": "Add the completed line to the table below; the form then clears for the next line.",
+        "note": "Adds the current form as a row in the table below and clears the form for the next line.",
         "scope": "each_row"
       },
       {
         "action": "submit",
         "target": "Submit intake",
         "value": null,
-        "note": "After all lines are added, submit the intake.",
+        "note": "Submit the intake after all lines have been added.",
         "scope": "once"
       }
     ],
     "repeat": {
-      "first": 1,
+      "first": 0,
       "last": 7
     },
-    "expected_effect": "The entered lines appear in the table below the form with SKU, Description, Qty, Unit Cost, Supplier, and Location, the intake form is cleared to its placeholders, and a green confirmation at the bottom right states 'Intake submitted \u2014 2 lines recorded.'"
+    "expected_effect": "Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location, and after submitting a green confirmation toast appears at the bottom right stating 'Intake submitted \u2014 2 line recorded.'"
   },
   "script": "results/submission/intake/intake.py",
   "attempts": [
@@ -195,10 +195,48 @@
         }
       ],
       "error": null,
-      "cost": 0.001144864
+      "cost": 0.0012743919999999998
     },
     {
       "attempt": 1,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "2 row(s) through intake.py"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 12 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the app stored exactly the rows we sent",
+          "ok": false,
+          "detail": "sent 2 row(s), the app holds 1"
+        },
+        {
+          "name": "the task was submitted",
+          "ok": true,
+          "detail": "1 record(s) confirmed by the app"
+        }
+      ],
+      "error": null,
+      "cost": 0.015671716
+    },
+    {
+      "attempt": 2,
       "passed": true,
       "checks": [
         {
@@ -233,19 +271,19 @@
         }
       ],
       "error": null,
-      "cost": 0.003529488
+      "cost": 0.024765739999999998
     }
   ],
   "passed": true,
   "ledger": {
-    "calls": 2,
-    "spent_usd": 0.003529,
-    "input_tokens": 4934,
-    "cached_tokens": 1072,
-    "output_tokens": 6278,
-    "reasoning_tokens": 4924,
-    "cache_hit_pct": 21.7
+    "calls": 3,
+    "spent_usd": 0.024766,
+    "input_tokens": 7052,
+    "cached_tokens": 4260,
+    "output_tokens": 48939,
+    "reasoning_tokens": 46824,
+    "cache_hit_pct": 60.4
   },
-  "elapsed_s": 17.6,
+  "elapsed_s": 109.0,
   "fresh_data": true
 }

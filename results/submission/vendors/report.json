@@ -2,7 +2,7 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/vendors.mp4",
   "plan": {
     "app": "VendorDesk",
-    "goal": "Onboard a new vendor using the New vendor form",
+    "goal": "Onboard and create a new vendor",
     "fields": [
       {
         "control": "text",
@@ -102,14 +102,14 @@
         "action": "type",
         "target": "Contract start",
         "value": "{contract_start}",
-        "note": "Entered in mm/dd/yyyy format as shown in the field.",
+        "note": "Date input displays mm/dd/yyyy placeholder; entered in that format.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Annual spend",
         "value": "{annual_spend}",
-        "note": "",
+        "note": "Entered as a plain number without commas or decimals.",
         "scope": "each_row"
       },
       {
@@ -141,7 +141,7 @@
         "scope": "each_row"
       },
       {
-        "action": "submit",
+        "action": "click",
         "target": "Create vendor",
         "value": null,
         "note": "",
@@ -152,7 +152,7 @@
       "first": 1,
       "last": 1
     },
-    "expected_effect": "A success banner 'Vendor created and welcome pack queued.' appears at the top of the form, and the CREATED panel on the right lists the new vendor's company name, country, contract start, annual spend, category, reference, notes, and welcome pack status."
+    "expected_effect": "A banner reading 'Vendor created and welcome pack queued.' appears at the top of the New vendor form and the Created panel on the right lists the entered company name, country, contract start as 2026-03-01, annual spend, category, internal reference, notes, and welcome pack yes."
   },
   "script": "results/submission/vendors/vendors.py",
   "attempts": [
@@ -192,19 +192,19 @@
         }
       ],
       "error": null,
-      "cost": 0.0012051639999999999
+      "cost": 0.001257996
     }
   ],
   "passed": true,
   "ledger": {
     "calls": 1,
-    "spent_usd": 0.001205,
+    "spent_usd": 0.001258,
     "input_tokens": 1820,
-    "cached_tokens": 316,
-    "output_tokens": 2107,
-    "reasoning_tokens": 1575,
-    "cache_hit_pct": 17.4
+    "cached_tokens": 1724,
+    "output_tokens": 2483,
+    "reasoning_tokens": 1936,
+    "cache_hit_pct": 94.7
   },
-  "elapsed_s": 8.4,
+  "elapsed_s": 9.0,
   "fresh_data": true
 }

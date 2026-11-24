@@ -1,0 +1,2 @@
+{"unit": "sauce", "purpose": "understand", "effort": "max", "input_tokens": 1820, "cached_tokens": 1724, "output_tokens": 5646, "reasoning_tokens": 4770, "cost": 0.002839496, "seconds": 11.94, "ok": true, "note": "video sauce.mp4", "prompt_ref": "000-sauce-understand.json"}
+{"unit": "repair", "purpose": "repair1", "effort": "max", "input_tokens": 2152, "cached_tokens": 756, "output_tokens": 8772, "reasoning_tokens": 7936, "cost": 0.004528624, "seconds": 17.52, "ok": true, "note": "attempt 1", "prompt_ref": "001-repair-repair1.json"}

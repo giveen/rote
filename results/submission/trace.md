@@ -6,24 +6,25 @@ Model: **muse-ember-1.0** through the Meta Model API. Prices: muse-ember-1.0, St
 
 | | |
 |---|---|
-| Model calls | **5** |
-| Input tokens | **10,583** |
-| of which served from cache | 3,868 (37%) |
-| Output tokens | **18,314** |
-| of which reasoning | 14,942 |
-| **Amount spent** | **$0.009844** |
+| Model calls | **6** |
+| Input tokens | **12,829** |
+| of which served from cache | 8,464 (66%) |
+| Output tokens | **70,244** |
+| of which reasoning | 66,051 |
+| **Amount spent** | **$0.035592** |
 
 ## Every call
 
 | # | stage | what it did | effort | in | cached | out | reasoning | seconds | $ |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `intake` | understand | max | 2,812 | 316 | 1,788 | 1,186 | 4.5 | 0.001145 |
-| 2 | `repair` | repair1 | max | 2,122 | 756 | 4,490 | 3,738 | 9.6 | 0.002385 |
-| 3 | `vendors` | understand | max | 1,820 | 316 | 2,107 | 1,575 | 5.1 | 0.001205 |
-| 4 | `sauce` | understand | max | 1,820 | 1,724 | 3,746 | 3,002 | 8.1 | 0.001889 |
-| 5 | `repair` | repair1 | max | 2,009 | 756 | 6,183 | 5,441 | 12.7 | 0.003220 |
+| 1 | `intake` | understand | max | 2,812 | 2,748 | 2,514 | 1,905 | 4.9 | 0.001274 |
+| 2 | `repair` | repair1 | max | 2,129 | 756 | 28,514 | 27,761 | 60.4 | 0.014397 |
+| 3 | `repair` | repair2 | max | 2,111 | 756 | 17,911 | 17,158 | 39.4 | 0.009094 |
+| 4 | `vendors` | understand | max | 1,820 | 1,724 | 2,483 | 1,936 | 5.4 | 0.001258 |
+| 5 | `sauce` | understand | max | 1,820 | 1,724 | 8,570 | 7,864 | 19.7 | 0.004301 |
+| 6 | `repair` | repair1 | max | 2,137 | 756 | 10,252 | 9,427 | 20.9 | 0.005267 |
 
-**Total: $0.009844** (within the $10 credit).
+**Total: $0.035592** (within the $10 credit).
 
 ## The prompts themselves
 
@@ -41,19 +42,25 @@ Request: `prompts/001-repair-repair1.json`
 
 (prompt file unreadable)
 
-### Call 3 — `vendors` / understand
+### Call 3 — `repair` / repair2
+
+Request: `prompts/002-repair-repair2.json`
+
+(prompt file unreadable)
+
+### Call 4 — `vendors` / understand
 
 Request: `prompts/000-vendors-understand.json`
 
 (prompt file unreadable)
 
-### Call 4 — `sauce` / understand
+### Call 5 — `sauce` / understand
 
 Request: `prompts/000-sauce-understand.json`
 
 (prompt file unreadable)
 
-### Call 5 — `repair` / repair1
+### Call 6 — `repair` / repair1
 
 Request: `prompts/001-repair-repair1.json`
 

@@ -1,15 +1,15 @@
 # rote report — intake.mp4
 
-- **2 attempt(s)**, last replay **passed**
-- **$0.00353** over 2 model calls (4,934 in / 6,278 out, 22% cached)
-- wall time 18s
+- **3 attempt(s)**, last replay **passed**
+- **$0.02477** over 3 model calls (7,052 in / 48,939 out, 60% cached)
+- wall time 109s
 - proof data: fresh — never in the recording
 
 ## What it understood
 
-**Goal.** Log goods received against a purchase order on the Parts intake page by adding each part as a line and submitting the intake.
+**Goal.** Log goods received against a purchase order on the Parts intake page by adding one intake line per item and submitting the intake.
 
-**Success looks like.** The entered lines appear in the table below the form with SKU, Description, Qty, Unit Cost, Supplier, and Location, the intake form is cleared to its placeholders, and a green confirmation at the bottom right states 'Intake submitted — 2 lines recorded.'
+**Success looks like.** Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location, and after submitting a green confirmation toast appears at the bottom right stating 'Intake submitted — 2 line recorded.'
 
 | step | action | target | value | scope |
 |---|---|---|---|---|
@@ -59,21 +59,24 @@
 | the app stored exactly the rows we sent | ✅ | 2/2 rows stored as sent |
 | the task was submitted | ✅ | 2 record(s) confirmed by the app |
 
-After the replay: `proof_attempt2.png`
+After the replay: `proof_attempt3.png`
 
 ## Attempts
 
 ### Attempt 1 — failed
 - ❌ the app stored exactly the rows we sent: sent 2 row(s), the app holds 1
 
-### Attempt 2 — passed
+### Attempt 2 — failed
+- ❌ the app stored exactly the rows we sent: sent 2 row(s), the app holds 1
+
+### Attempt 3 — passed
 
 ## Cost
 
 | what | calls | tokens in | cached | tokens out | $ |
 |---|---|---|---|---|---|
-| intake | 1 | 2,812 | 316 | 1,788 | 0.00114 |
-| repair | 1 | 2,122 | 756 | 4,490 | 0.00238 |
+| intake | 1 | 2,812 | 2,748 | 2,514 | 0.00127 |
+| repair | 2 | 4,240 | 1,512 | 46,425 | 0.02349 |
 
 Raw per-call trace: `results/submission/intake/ledger.jsonl`
 

@@ -1,9 +1,9 @@
 """Automation for Swag Labs, written by rote from sauce.mp4.
 
-Procedure: Log in, add the Sauce Labs Backpack to the cart, and complete checkout to place the order.
-What success looks like: The Checkout: Complete page is displayed with 'Thank you for your order!' and a message that the order has been dispatched.
+Procedure: Log in, add the Sauce Labs Backpack to the cart, and proceed through checkout to the order overview page.
+What success looks like: The Checkout: Overview page is shown listing Sauce Labs Backpack ($29.99), Payment Information: SauceCard #31337, Shipping Information: Free Pony Express Delivery, and Price Total: $32.39 (Item total: $29.99, Tax: $2.40, Total: $32.39), with Cancel and Finish buttons visible.
 
-Data comes in through `rows`: one dict per repetition, keyed by `username`, `password`, `first_name`, `last_name`, `zip_postal_code`.
+Data comes in through `rows`: one dict per repetition, keyed by `first_name`, `last_name`, `zip_postal_code`.
 No model is involved in running this file.
 """
 
@@ -129,13 +129,11 @@ def _key(row: dict, key: str) -> str:
 
 def _one(page: Page, row: dict[str, str]) -> None:
     """One repetition of the task."""
-    _button(page, "Add to cart").click()
-    _button(page, "Cart").click()
-    _button(page, "Checkout").click()
     _fill(page, "First Name", row[_key(row, "first_name")])
     _fill(page, "Last Name", row[_key(row, "last_name")])
     _fill(page, "Zip/Postal Code", row[_key(row, "zip_postal_code")])
     _button(page, "Continue").click()
+    pass  # read "Checkout: Overview"
 
 
 def run(page: Page, rows: list[dict[str, str]]) -> None:
@@ -144,6 +142,9 @@ def run(page: Page, rows: list[dict[str, str]]) -> None:
     _fill(page, "Username", "standard_user")
     _fill(page, "Password", "secret_sauce")
     _button(page, "Login").click()
+    _button(page, "Add to cart").click()
+    _button(page, "Cart").click()
+    _button(page, "Checkout").click()
     for row in rows:
         _one(page, row)
-    _button(page, "Finish").click()
+    pass
