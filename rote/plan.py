@@ -181,6 +181,10 @@ def _placeholder(step: Step) -> str | None:
     return m.group(1) if m else None
 
 
+def _canon(key: str) -> str:
+    return "".join(ch for ch in key.lower() if ch.isalnum())
+
+
 def row_keys(plan: "Plan") -> list[str]:
     """Every data key the plan speaks: row keys first, then {placeholders} in step order.
 
@@ -197,6 +201,34 @@ def row_keys(plan: "Plan") -> list[str]:
         if k and k not in keys:
             keys.append(k)
     return keys
+
+
+def align_rows(rows: list[dict[str, str]], plan: Plan) -> list[dict[str, str]]:
+    """Rename a user's columns onto the plan's own key names."""
+    wanted = [k for k in row_keys(plan)]
+    if not wanted:
+        return rows
+    aligned = []
+    for row in rows:
+        out = dict(row)
+        for key in wanted:
+            if key in out:
+                continue
+            cands = [k for k in out if k not in wanted]
+            # Exact and canonical (case/punctuation-insensitive) matches always apply;
+            # only the prefix heuristic is guarded by unambiguity, so a single stray
+            # extra column cannot swallow a match that is certain.
+            match = next((k for k in cands if k == key), None)
+            if match is None:
+                match = next((k for k in cands if _canon(k) == _canon(key)), None)
+            if match is None and len(cands) == 1:
+                match = next((k for k in cands
+                              if _canon(k).startswith(_canon(key))
+                              or _canon(key).startswith(_canon(k))), None)
+            if match is not None:
+                out[key] = out.pop(match)
+        aligned.append(out)
+    return aligned
 
 
 def coverage(plan: Plan, expected_steps: list[Step]) -> dict[str, Any]:

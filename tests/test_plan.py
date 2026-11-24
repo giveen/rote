@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from rote.plan import PLAN_SCHEMA, Plan, Step, coverage, row_keys
+from rote.plan import PLAN_SCHEMA, Plan, Step, align_rows, coverage, row_keys
 
 
 def sample() -> dict:
@@ -111,6 +111,30 @@ class TestRepeatValidation(unittest.TestCase):
         p = self.with_repeat({"first": 3, "last": 2})
         again = Plan.from_json(json.dumps(p.to_dict()))
         self.assertEqual(again.to_dict(), p.to_dict())
+
+
+class TestAlignRows(unittest.TestCase):
+    def test_zip_aligns_to_zip_postal_code(self):
+        """A user's `zip` column lands on the plan's `zip_postal_code` key."""
+        plan = Plan(app="Swag Labs", goal="checkout",
+                    rows=[{"first_name": "Ada", "last_name": "Lovelace",
+                           "zip_postal_code": "24037"}],
+                    steps=[], expected_effect="done")
+        aligned = align_rows([{"first_name": "Grace", "last_name": "Hopper",
+                               "zip": "20850"}], plan)
+        self.assertEqual(aligned[0]["zip_postal_code"], "20850")
+        self.assertEqual(aligned[0]["first_name"], "Grace")
+        self.assertNotIn("zip", aligned[0])
+
+    def test_matching_keys_returned_unchanged(self):
+        """A row that already uses the plan's key names comes back as-is."""
+        plan = Plan(app="Swag Labs", goal="checkout",
+                    rows=[{"first_name": "Ada", "last_name": "Lovelace",
+                           "zip_postal_code": "24037"}],
+                    steps=[], expected_effect="done")
+        rows = [{"first_name": "Grace", "last_name": "Hopper",
+                 "zip_postal_code": "20850"}]
+        self.assertEqual(align_rows(rows, plan), rows)
 
 
 class TestRowKeys(unittest.TestCase):
