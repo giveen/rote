@@ -117,6 +117,8 @@ PYTHONPATH=. ./.venv/bin/python -m rote learn results/recordings/intake.mp4 \
     --url http://127.0.0.1:8765/app.html --rows results/fresh_rows.json
 ```
 
+Dependencies are pinned to the audited versions in `requirements.txt` (direct) and `requirements.lock.txt` (the full resolved set), so an install reproduces the exact environment the results were measured on. The audit in `tools/dependency_audit.py` reports zero known advisories for them; re-run it with `./.venv/bin/python tools/dependency_audit.py`, which rewrites `docs/dependencies.json`.
+
 `MODEL_API_KEY` comes from the environment, or from `~/.config/muse/auth.json`.
 
 ## Who wrote what
