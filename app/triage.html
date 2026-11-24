@@ -31,7 +31,7 @@
   .tag.high { background:#fde8e8; color:#a11a1a; }
   .tag.resolved { background:#e6f5ee; color:var(--good); }
   button { padding:8px 13px; border-radius:8px; border:1px solid var(--line);
-           background:#fff; font:inherit; cursor:pointer; }
+           background:#fff; font:inherit; cursor:pointer; white-space:nowrap; }
   button.open { border-color:var(--accent); color:var(--accent); font-weight:600; }
   button.primary { background:var(--accent); border-color:var(--accent); color:#fff;
                    font-weight:600; }
@@ -58,6 +58,12 @@
       <tbody id="rows"></tbody>
     </table>
   </section>
+
+  <aside class="card" id="empty">
+    <h1>Nothing open</h1>
+    <p style="color:#616b7c;margin:0">Search for a ticket and open it to change its status,
+      priority or assignee.</p>
+  </aside>
 
   <aside class="card side" id="detail">
     <h1 id="detail-title">Ticket</h1>
@@ -144,6 +150,7 @@ function openTicket(t) {
   $('assignee').value = t.assignee;
   $('note').value = t.note;
   $('detail').classList.add('show');
+  $('empty').style.display = 'none';
 }
 
 $('save').addEventListener('click', () => {
@@ -158,6 +165,7 @@ $('save').addEventListener('click', () => {
   $('toast').textContent = `${editing.id} saved`;
   $('toast').classList.add('show');
   $('detail').classList.remove('show');
+  $('empty').style.display = '';
   render();
 });
 
