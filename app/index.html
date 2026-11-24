@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rote — demo apps</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#262b36; --text:#e7e9ee;
+          --muted:#98a1b3; --accent:#4f8cff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+         background:var(--bg); color:var(--text); }
+  main { max-width:760px; margin:64px auto; padding:0 22px; }
+  h1 { font-size:26px; margin:0 0 6px; letter-spacing:-.2px; }
+  p.lede { color:var(--muted); margin:0 0 30px; }
+  a.card { display:block; background:var(--panel); border:1px solid var(--line);
+           border-radius:14px; padding:18px 20px; margin-bottom:14px;
+           text-decoration:none; color:var(--text); }
+  a.card:hover { border-color:var(--accent); }
+  a.card b { display:block; font-size:16px; margin-bottom:3px; }
+  a.card span { color:var(--muted); font-size:13px; }
+  footer { color:var(--muted); font-size:12px; margin-top:28px; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f6f7f9; --panel:#fff; --line:#dde1e8; --text:#12151b;
+            --muted:#5b6472; --accent:#2f6fe4; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>rote — demo apps</h1>
+  <p class="lede">Two small internal tools the recorder and the replay run against.
+    Both are fixtures written for the demo; neither is the product.</p>
+
+  <a class="card" href="app.html">
+    <b>Stockroom — Parts intake</b>
+    <span>Repeats: type each received line, add it, then submit the intake.</span>
+  </a>
+
+  <a class="card" href="vendors.html">
+    <b>VendorDesk — New vendor</b>
+    <span>One pass: text, dropdowns, a date, a number, a note and a checkbox.</span>
+  </a>
+
+  <footer>Serve this folder (<code>python3 -m http.server 8765 --directory app</code>)
+    and record a session against either page.</footer>
+</main>
+</body>
+</html>
