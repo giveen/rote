@@ -1,0 +1,9 @@
+reading intake.mp4 (79 KB)…
+  Log goods received against a purchase order on the Parts intake page by adding one or more part lines and submitting the intake.
+  6 controls, 2 example row(s), 8 steps · $0.00112
+  attempt 1: failed (checks failed) → repairing the plan
+  attempt 2: replay passed with fresh data
+
+2 model calls · $0.00550 spent · 15% cached · 28s
+PASSED · automation: /tmp/take-intake-1/intake.py
+report: /tmp/take-intake-1/report.md

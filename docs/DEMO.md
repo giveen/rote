@@ -75,27 +75,40 @@ Open `results/demo/…/certificate.html`:
 
 ## 1:40 – 2:20 — The failure is also the point
 
+**Use the intake task for this beat.** It is the one that fails reliably and shows it: measured
+over repeated runs, the first plan puts the "Add line" click outside the repeating block, so both
+rows are typed into the same form and only the second one is kept. The verdict catches it, the
+loop repairs the plan, and the second attempt stores both rows.
+
 Terminal:
 
 ```bash
-PYTHONPATH=. ./.venv/bin/python -m rote learn results/recordings/sauce.mp4 \
-  --url https://www.saucedemo.com/ --rows results/sauce_fresh.json
+PYTHONPATH=. ./.venv/bin/python -m rote learn results/recordings/intake.mp4 \
+  --url http://127.0.0.1:8765/app.html --rows results/fresh_rows.json
 ```
 
-> "This is a real site — a public automation sandbox — with a login, a cart and a checkout."
+It runs two attempts in about 20 seconds. Do **not** cut the failure. Say:
 
-When attempt 1 fails and the repair runs, do **not** cut it. Say:
+> "The first plan was wrong. It put the click that commits a line outside the repeating block, so
+> both rows went into the same form and only the second survived — the app ended up with one line
+> instead of two."
 
-> "The first plan was wrong: it treated the password as data the user supplies. So the replay
-> fails, and the failure — plus the app's real controls — goes back to Ember, which fixes the
-> plan. Not the code: the plan."
+> "The verdict caught that, because it compares what the app stored against what we sent. So the
+> failure goes back to Ember with the app's real controls, and it repairs the plan."
 
-When attempt 2 passes:
+Cut in the two frames from `results/broll/failing-take/` — they are the same run:
 
-> "Two calls. Four thousandths of a dollar. This is the honest version of the demo: the first
-> answer is often wrong, and the system is built to notice and retry."
+- `proof_attempt1.png` — the table holds one row, and the toast says "Intake submitted — 1 line
+  recorded"
+- `proof_attempt2.png` — both rows, after the repair
 
----
+When attempt 2 prints `PASSED`:
+
+> "Two calls, half a cent, and the difference is visible: one line, then two."
+
+If you want the third-party app on screen too, `sauce` is a harder case — it took three or four
+attempts in every take I measured, and one take ended still failing. It is honest but it is not a
+25-second beat; use `results/broll/sauce-paced.mp4` instead of running it live.
 
 ## 2:20 – 2:50 — Why it's cheap enough to be boring
 
