@@ -70,11 +70,12 @@ class Ledger:
     path: Path | None = None
     trace_dir: Path | None = None   # where the exact prompts are kept, for the audit trail
     calls: list[Call] = field(default_factory=list)
+    _spent: float = 0.0   # running total: spent is read before every request, so O(n) adds up
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     @property
     def spent(self) -> float:
-        return sum(c.cost for c in self.calls)
+        return self._spent
 
     @property
     def left(self) -> float:
@@ -92,12 +93,22 @@ class Ledger:
     def record(self, call: Call) -> None:
         with self._lock:
             self.calls.append(call)
+            self._spent += call.cost
             if self.path:
                 self.path.parent.mkdir(parents=True, exist_ok=True)
                 with self.path.open("a") as f:
                     f.write(json.dumps(asdict(call)) + "\n")
 
-    def guard(self, estimate: float = 0.05) -> None:
+    def guard(self, estimate: float | None = None) -> None:
+        """Refuse when the next call could overrun the budget.
+
+        Reserves twice the largest call seen so far (and never less than $0.05): a flat
+        reserve lets a long-context call be admitted and then overshoot the cap by a
+        whole call.
+        """
+        if estimate is None:
+            largest = max((c.cost for c in self.calls), default=0.0)
+            estimate = max(0.05, 2 * largest)
         if self.left < estimate:
             raise BudgetExceeded(
                 f"stopping: ${self.left:.4f} left of ${self.budget:.2f}. "
@@ -109,7 +120,7 @@ class Ledger:
         cached = sum(x.cached_tokens for x in c)
         return {
             "calls": len(c),
-            "spent_usd": round(sum(x.cost for x in c), 6),
+            "spent_usd": round(self._spent, 6),
             "input_tokens": i,
             "cached_tokens": cached,
             "output_tokens": sum(x.output_tokens for x in c),

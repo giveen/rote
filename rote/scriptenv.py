@@ -29,12 +29,15 @@ def _first_present(candidates, timeout_ms: int = 4000):
     """The first candidate that actually shows up.
 
     Counting matches answers about this instant, which is wrong on any app that navigates:
-    the control arrives a moment later. Waiting per candidate keeps the label-first strategy
-    without turning a slow page into a failure.
+    the control arrives a moment later. timeout_ms is the whole budget for the lookup,
+    shared across candidates, so a failing step waits at most timeout_ms instead of one
+    timeout per candidate; the happy path still returns on the first candidate immediately.
     """
-    for loc in candidates:
+    cands = list(candidates)
+    per = max(600, timeout_ms // max(len(cands), 1)) if cands else timeout_ms
+    for loc in cands:
         try:
-            loc.first.wait_for(state="visible", timeout=timeout_ms)
+            loc.first.wait_for(state="visible", timeout=per)
             return loc.first
         except Exception:
             continue

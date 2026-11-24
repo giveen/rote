@@ -15,7 +15,8 @@ from pathlib import Path
 
 from .certify import write_certificate
 from .client import BudgetExceeded, Ledger
-from .plan import Plan
+from .plan import Plan, row_keys
+from .preflight import reachable
 from .record import intake_session, record, session_from_json, vendor_session
 from .replay import ReplayResult, replay, structural_checks
 from .repair import diff as plan_diff, repair
@@ -38,7 +39,7 @@ def _align_rows(rows: list[dict[str, str]], plan: Plan) -> list[dict[str, str]]:
     case-insensitive, then punctuation-insensitive, then prefix — and only when it is
     unambiguous, so a wrong guess stays visible instead of silently filling the wrong field.
     """
-    wanted = [k for k in _row_keys(plan)]
+    wanted = [k for k in row_keys(plan)]
     if not wanted:
         return rows
     aligned = []
@@ -48,38 +49,37 @@ def _align_rows(rows: list[dict[str, str]], plan: Plan) -> list[dict[str, str]]:
             if key in out:
                 continue
             cands = [k for k in out if k not in wanted]
-            match = (next((k for k in cands if _canon(k) == _canon(key)), None)
-                     or next((k for k in cands
+            # Exact and canonical (case/punctuation-insensitive) matches always apply;
+            # only the prefix heuristic is guarded by unambiguity, so a single stray
+            # extra column cannot swallow a match that is certain.
+            match = next((k for k in cands if k == key), None)
+            if match is None:
+                match = next((k for k in cands if _canon(k) == _canon(key)), None)
+            if match is None and len(cands) == 1:
+                match = next((k for k in cands
                               if _canon(k).startswith(_canon(key))
                               or _canon(key).startswith(_canon(k))), None)
-                     if len(cands) == 1 else None)
-            if match:
+            if match is not None:
                 out[key] = out.pop(match)
         aligned.append(out)
     return aligned
 
 
-def _row_keys(plan: Plan) -> list[str]:
-    keys: list[str] = []
-    for row in plan.rows:
-        for k in row:
-            if k not in keys:
-                keys.append(k)
-    for step in plan.steps:
-        if step.value and step.value.startswith("{") and step.value.endswith("}"):
-            k = step.value[1:-1]
-            if k not in keys:
-                keys.append(k)
-    return keys
+def _read_rows_file(path: Path) -> list[dict[str, str]]:
+    """Parse a --rows file. Empty data is refused here: a zero-row run proves nothing,
+    and every check on it would pass vacuously."""
+    data = json.loads(path.read_text())
+    rows = data["rows"] if isinstance(data, dict) else data
+    if not isinstance(rows, list) or not rows:
+        raise ValueError(f"{path} holds no data rows (0 rows): there is nothing to prove against")
+    return [dict(r) for r in rows]
 
 
 def _load_rows(path: Path | None, plan: Plan) -> tuple[list[dict[str, str]], bool]:
     """Fresh data for the proof. Without a file we can only re-use the video's own data,
     which proves the script runs but not that it generalises — so it is flagged."""
     if path:
-        data = json.loads(path.read_text())
-        rows = data["rows"] if isinstance(data, dict) else data
-        return _align_rows([dict(r) for r in rows], plan), True
+        return _align_rows(_read_rows_file(path), plan), True
     return plan.rows, False
 
 
@@ -88,73 +88,98 @@ def cmd_learn(args: argparse.Namespace) -> int:
     if not video.exists():
         print(f"no such recording: {video}")
         return 2
+    # Empty data is refused before a single model call: a zero-row replay would pass
+    # vacuously, so there is no verdict worth lending money to.
+    if args.rows:
+        try:
+            _read_rows_file(Path(args.rows))
+        except (OSError, ValueError) as e:
+            print(f"refusing to learn: {e}")
+            return 2
+    # A dead app is not a plan problem; a preflight stops the run before any repair call
+    # can be spent inventing explanations for a navigation failure.
+    ok, why = reachable(args.url)
+    if not ok:
+        print(f"refusing to learn: {args.url} did not answer ({why[:300]})")
+        print("  no model calls spent — check the app is running and the URL is right")
+        return 2
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     ledger = Ledger(budget=args.budget, path=out / "ledger.jsonl",
                     trace_dir=out / "prompts")
     t0 = time.time()
-
-    print(f"reading {video.name} ({video.stat().st_size / 1e3:.0f} KB)…")
-    plan = understand(video, ledger=ledger, effort=args.effort, hint=args.hint)
-    print(f"  {plan.goal}")
-    print(f"  {len(plan.fields)} controls, {len(plan.rows)} example row(s), "
-          f"{len(plan.steps)} steps · ${ledger.spent:.5f}")
-
-    fresh_rows, is_fresh = _load_rows(Path(args.rows) if args.rows else None, plan)
-    if not is_fresh:
-        print("  ! no --rows given: replaying the recording's own data. "
-              "This proves it runs, not that it generalises.")
-
-    attempts: list[dict] = []
-    history: list[str] = []
+    plan: Plan | None = None
     result: ReplayResult | None = None
+    attempts: list[dict] = []
     script = out / f"{video.stem}.py"
-    for attempt in range(args.repairs + 1):
-        write_script(plan, script, recording=video.name)
-        result = replay(script, args.url, fresh_rows,
-                        screenshot=out / f"proof_attempt{attempt + 1}.png",
-                        headless=not args.headed,
-                        expected_effect=plan.expected_effect)
-        # A block that does not commit cannot iterate, whatever the app reports afterwards.
-        result.checks.extend(structural_checks(plan.steps, plan.repeat, len(fresh_rows)))
-        result.passed = all(c.ok for c in result.checks)
-        attempts.append({
-            "attempt": attempt,
-            "passed": result.passed,
-            "checks": [{"name": c.name, "ok": c.ok, "detail": c.detail}
-                       for c in result.checks],
-            "error": result.error,
-            "cost": ledger.spent,
-        })
-        if result.passed:
-            print(f"  attempt {attempt + 1}: replay passed with fresh data")
-            break
-        if attempt == args.repairs:
-            print(f"  attempt {attempt + 1}: still failing — see the report")
-            break
-        print(f"  attempt {attempt + 1}: failed ({result.error or 'checks failed'}) "
-              f"→ repairing the plan")
-        history.append(f"attempt {attempt + 1}: {result.error or 'checks failed'}")
-        try:
-            fixed = repair(plan, result.as_evidence(), ledger=ledger, attempt=attempt + 1,
-                           effort=args.effort, history=history)
-        except BudgetExceeded as e:
-            print(f"  stopped: {e}")
-            break
-        changes = plan_diff(plan, fixed)
-        for c in changes[:6]:
-            print(f"    {c}")
-        plan = fixed
+    fresh_rows: list[dict[str, str]] = []
+    is_fresh = False
+    try:
+        print(f"reading {video.name} ({video.stat().st_size / 1e3:.0f} KB)…")
+        plan = understand(video, ledger=ledger, effort=args.effort, hint=args.hint)
+        print(f"  {plan.goal}")
+        print(f"  {len(plan.fields)} controls, {len(plan.rows)} example row(s), "
+              f"{len(plan.steps)} steps · ${ledger.spent:.5f}")
 
-    _write_report(out, video, plan, script, result, attempts, ledger, time.time() - t0,
-                  fresh=is_fresh)
-    s = ledger.summary()
-    print(f"\n{s['calls']} model calls · ${s['spent_usd']:.5f} spent · "
-          f"{s['cache_hit_pct']:.0f}% cached · {time.time() - t0:.0f}s")
-    print(f"{'PASSED' if result and result.passed else 'NOT PASSED'} · "
-          f"automation: {script}")
-    print(f"report: {out / 'report.md'}")
-    return 0 if result and result.passed else 1
+        fresh_rows, is_fresh = _load_rows(Path(args.rows) if args.rows else None, plan)
+        if not is_fresh:
+            print("  ! no --rows given: replaying the recording's own data. "
+                  "This proves it runs, not that it generalises.")
+
+        history: list[str] = []
+        for attempt in range(args.repairs + 1):
+            write_script(plan, script, recording=video.name)
+            result = replay(script, args.url, fresh_rows,
+                            screenshot=out / f"proof_attempt{attempt + 1}.png",
+                            headless=not args.headed,
+                            expected_effect=plan.expected_effect)
+            # A block that does not commit cannot iterate, whatever the app reports afterwards.
+            result.checks.extend(structural_checks(plan.steps, plan.repeat, len(fresh_rows)))
+            result.passed = all(c.ok for c in result.checks)
+            attempts.append({
+                "attempt": attempt,
+                "passed": result.passed,
+                "checks": [{"name": c.name, "ok": c.ok, "detail": c.detail}
+                           for c in result.checks],
+                "error": result.error,
+                "cost": ledger.spent,
+            })
+            if result.passed:
+                print(f"  attempt {attempt + 1}: replay passed with fresh data")
+                break
+            if attempt == args.repairs:
+                print(f"  attempt {attempt + 1}: still failing — see the report")
+                break
+            print(f"  attempt {attempt + 1}: failed ({result.error or 'checks failed'}) "
+                  f"→ repairing the plan")
+            history.append(f"attempt {attempt + 1}: {result.error or 'checks failed'}")
+            try:
+                fixed = repair(plan, result.as_evidence(), ledger=ledger, attempt=attempt + 1,
+                               effort=args.effort, history=history)
+            except BudgetExceeded as e:
+                print(f"  stopped: {e}")
+                break
+            changes = plan_diff(plan, fixed)
+            for c in changes[:6]:
+                print(f"    {c}")
+            plan = fixed
+
+        _write_report(out, video, plan, script, result, attempts, ledger, time.time() - t0,
+                      fresh=is_fresh)
+        s = ledger.summary()
+        print(f"\n{s['calls']} model calls · ${s['spent_usd']:.5f} spent · "
+              f"{s['cache_hit_pct']:.0f}% cached · {time.time() - t0:.0f}s")
+        print(f"{'PASSED' if result and result.passed else 'NOT PASSED'} · "
+              f"automation: {script}")
+        print(f"report: {out / 'report.md'}")
+        return 0 if result and result.passed else 1
+    except BudgetExceeded as e:
+        # A spent budget is a refusal, not a crash: say so, write what exists, exit non-zero.
+        print(f"  stopped: {e}")
+        if plan is not None:
+            _write_report(out, video, plan, script, result, attempts, ledger,
+                          time.time() - t0, fresh=is_fresh)
+        return 1
 
 
 def cmd_trace(args: argparse.Namespace) -> int:
@@ -210,7 +235,11 @@ def _write_report(out: Path, video: Path, plan: Plan, script: Path,
         f"{s['cache_hit_pct']:.0f}% cached)",
         f"- wall time {elapsed:.0f}s",
         f"- proof data: {'fresh — never in the recording' if fresh else 'the recording’s own data'}",
-        "", "## What it understood", "",
+    ]
+    if plan.repeat_rejected:
+        # A model error worth surfacing, not one silently repaired into a different loop.
+        lines.append(f"- **note:** {plan.repeat_rejected}")
+    lines += ["", "## What it understood", "",
         f"**Goal.** {plan.goal}", "",
         f"**Success looks like.** {plan.expected_effect}", "",
         "| step | action | target | value | scope |", "|---|---|---|---|---|",

@@ -66,10 +66,10 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <main class="wrap">
 <header>
 <h1>Stockroom</h1>
-<p class="goal">Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting the intake.</p>
+<p class="goal">Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them</p>
 <span class="badge badge-passed">PASSED</span>
 </header>
-<p class="cost">Spent $0.00705 · 2 model calls · 71.4% cache hit</p>
+<p class="cost">Spent $0.00214 · 2 model calls · 71.0% cache hit</p>
 <section>
 <h2>What it learned</h2>
 <div class="table-wrap">
@@ -95,11 +95,13 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <thead><tr><th>name</th><th>result</th><th>detail</th></tr></thead>
 <tbody>
 <tr><td>script runs on fresh data</td><td>✅</td><td>2 row(s) through intake.py</td></tr>
+<tr><td>the loop completed one cycle per row</td><td>✅</td><td>2 iterations, each ending on app.html</td></tr>
 <tr><td>every value was accepted by its control</td><td>✅</td><td>all 12 values were typed and confirmed on screen</td></tr>
 <tr><td>the values are visible on the final page</td><td>✅</td><td>all 12 values found</td></tr>
 <tr><td>the app reached the state the recording ended in</td><td>✅</td><td>matched the expected end state</td></tr>
 <tr><td>the app stored exactly the rows we sent</td><td>✅</td><td>2/2 rows stored as sent</td></tr>
 <tr><td>the task was submitted</td><td>✅</td><td>2 record(s) confirmed by the app</td></tr>
+<tr><td>the repeating block commits each row</td><td>✅</td><td>1 committing step(s) inside steps 1–7</td></tr>
 </tbody>
 </table>
 </div>
@@ -109,8 +111,8 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <h2>Generated automation</h2>
 <pre>&quot;&quot;&quot;Automation for Stockroom, written by rote from intake.mp4.
 
-Procedure: Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting the intake.
-What success looks like: The intake table lists each entered line with its SKU, description, quantity, unit cost, supplier and location, and an &#x27;Intake submitted — 2 lines recorded.&#x27; confirmation appears at the bottom right.
+Procedure: Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them
+What success looks like: Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location; after submitting, a confirmation toast reads &#x27;Intake submitted — 2 lines recorded.&#x27;
 
 Data comes in through `rows`: one dict per repetition, keyed by `sku`, `description`, `quantity`, `unit_cost`, `supplier`, `location`.
 No model is involved in running this file.
@@ -121,16 +123,31 @@ from __future__ import annotations
 DATE_FORMATS = (&quot;%Y-%m-%d&quot;, &quot;%Y/%m/%d&quot;, &quot;%d %b %Y&quot;, &quot;%d %B %Y&quot;, &quot;%b %d, %Y&quot;, &quot;%B %d, %Y&quot;)
 
 
+EVENTS: list = []
+
+
+def _mark(page, label: str) -&gt; None:
+    &quot;&quot;&quot;Record where an iteration ended, so &quot;it looped three times&quot; is observable rather than
+    assumed. An app that exposes no state still tells you which page it is on.&quot;&quot;&quot;
+    try:
+        EVENTS.append((label, page.url))
+    except Exception:
+        pass
+
+
 def _first_present(candidates, timeout_ms: int = 4000):
     &quot;&quot;&quot;The first candidate that actually shows up.
 
     Counting matches answers about this instant, which is wrong on any app that navigates:
-    the control arrives a moment later. Waiting per candidate keeps the label-first strategy
-    without turning a slow page into a failure.
+    the control arrives a moment later. timeout_ms is the whole budget for the lookup,
+    shared across candidates, so a failing step waits at most timeout_ms instead of one
+    timeout per candidate; the happy path still returns on the first candidate immediately.
     &quot;&quot;&quot;
-    for loc in candidates:
+    cands = list(candidates)
+    per = max(600, timeout_ms // max(len(cands), 1)) if cands else timeout_ms
+    for loc in cands:
         try:
-            loc.first.wait_for(state=&quot;visible&quot;, timeout=timeout_ms)
+            loc.first.wait_for(state=&quot;visible&quot;, timeout=per)
             return loc.first
         except Exception:
             continue
@@ -245,6 +262,7 @@ def _one(page: Page, row: dict[str, str]) -&gt; None:
     _select(page, &quot;Supplier&quot;, row[_key(row, &quot;supplier&quot;)])
     _select(page, &quot;Location&quot;, row[_key(row, &quot;location&quot;)])
     _button(page, &quot;Add line&quot;).click()
+    _mark(page, &quot;iteration&quot;)
 
 
 def run(page: Page, rows: list[dict[str, str]]) -&gt; None:

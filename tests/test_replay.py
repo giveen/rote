@@ -7,8 +7,11 @@ model. A verifier that lies is worse than no verifier, so its behaviour is pinne
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import mock
 
-from rote.replay import Check, _judge_effect, _matches, _norm, _records
+from rote.replay import Check, _judge_effect, _matches, _norm, _records, replay
 
 ROWS = [{"company_name": "Brightline AB", "country": "Spain",
          "annual_spend": "78000", "send_welcome_pack": "true"}]
@@ -109,6 +112,63 @@ class TestChecks(unittest.TestCase):
         c = Check("name", False, "why")
         self.assertFalse(c.ok)
         self.assertEqual(c.detail, "why")
+
+
+class _FakePage:
+    """Just enough of a page for replay(): loads, does nothing, ends empty."""
+
+    def set_default_timeout(self, ms):
+        pass
+
+    def goto(self, url):
+        pass
+
+    def wait_for_timeout(self, ms):
+        pass
+
+    def evaluate(self, js):
+        return None
+
+    def inner_text(self, selector):
+        return ""
+
+
+class _FakeBrowser:
+    def new_page(self, viewport=None):
+        return _FakePage()
+
+    def close(self):
+        pass
+
+
+class _FakePlaywright:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+    @property
+    def chromium(self):
+        return self
+
+    def launch(self, headless=True):
+        return _FakeBrowser()
+
+
+class TestEmptyRun(unittest.TestCase):
+    def test_a_zero_row_run_can_never_pass(self):
+        """With no rows every other check passes vacuously (audit A1), so the verdict
+        needs a check that fails instead of a meaningless PASSED."""
+        with TemporaryDirectory() as tmp:
+            script = Path(tmp) / "gen.py"
+            script.write_text("def run(page, rows):\n    pass\n")
+            with mock.patch("rote.replay.sync_playwright", lambda: _FakePlaywright()):
+                result = replay(script, "http://example.invalid/", [])
+        self.assertFalse(result.passed)
+        data_check = next(c for c in result.checks
+                          if c.name == "there is data to prove against")
+        self.assertFalse(data_check.ok)
 
 
 if __name__ == "__main__":

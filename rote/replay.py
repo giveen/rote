@@ -116,6 +116,11 @@ def replay(script: Path, url: str, rows: list[dict[str, str]], *,
     res.checks.extend(_judge_effect(res.end_state, res.page_text, rows,
                                     expected_effect=expected_effect,
                                     ran_clean=res.error is None))
+    # With no rows every other check passes vacuously, so a zero-row run must fail here:
+    # there is nothing to have proven.
+    if not rows:
+        res.checks.append(Check("there is data to prove against", False,
+                                "0 rows replayed: with no data there is nothing to verify"))
     res.passed = all(c.ok for c in res.checks)
     res.seconds = time.time() - t0
     return res
