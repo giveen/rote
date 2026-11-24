@@ -15,7 +15,7 @@ from pathlib import Path
 
 from .certify import write_certificate
 from .client import BudgetExceeded, Ledger
-from .plan import Plan, row_keys
+from .plan import Plan, align_rows, row_keys
 from .preflight import reachable
 from .record import intake_session, record, session_from_json, vendor_session
 from .replay import ReplayResult, replay, structural_checks
@@ -27,42 +27,8 @@ from .understand import understand
 DEFAULT_BUDGET = 10.0
 
 
-def _canon(key: str) -> str:
-    return "".join(ch for ch in key.lower() if ch.isalnum())
-
-
-def _align_rows(rows: list[dict[str, str]], plan: Plan) -> list[dict[str, str]]:
-    """Rename the user's columns to the plan's own key names.
-
-    The plan's example rows are the contract, but nobody should have to guess that it called
-    the field `zip_postal_code` when their spreadsheet says `zip`. Matching is exact, then
-    case-insensitive, then punctuation-insensitive, then prefix — and only when it is
-    unambiguous, so a wrong guess stays visible instead of silently filling the wrong field.
-    """
-    wanted = [k for k in row_keys(plan)]
-    if not wanted:
-        return rows
-    aligned = []
-    for row in rows:
-        out = dict(row)
-        for key in wanted:
-            if key in out:
-                continue
-            cands = [k for k in out if k not in wanted]
-            # Exact and canonical (case/punctuation-insensitive) matches always apply;
-            # only the prefix heuristic is guarded by unambiguity, so a single stray
-            # extra column cannot swallow a match that is certain.
-            match = next((k for k in cands if k == key), None)
-            if match is None:
-                match = next((k for k in cands if _canon(k) == _canon(key)), None)
-            if match is None and len(cands) == 1:
-                match = next((k for k in cands
-                              if _canon(k).startswith(_canon(key))
-                              or _canon(key).startswith(_canon(k))), None)
-            if match is not None:
-                out[key] = out.pop(match)
-        aligned.append(out)
-    return aligned
+# Kept for backwards compatibility: alignment now lives in rote.plan as align_rows.
+_align_rows = align_rows
 
 
 def _read_rows_file(path: Path) -> list[dict[str, str]]:
@@ -79,7 +45,7 @@ def _load_rows(path: Path | None, plan: Plan) -> tuple[list[dict[str, str]], boo
     """Fresh data for the proof. Without a file we can only re-use the video's own data,
     which proves the script runs but not that it generalises — so it is flagged."""
     if path:
-        return _align_rows(_read_rows_file(path), plan), True
+        return align_rows(_read_rows_file(path), plan), True
     return plan.rows, False
 
 

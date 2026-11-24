@@ -13,11 +13,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: cache playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('requirements.lock.txt') }}
       - name: install
         run: |
           python -m venv .venv
           ./.venv/bin/pip install --quiet -r requirements.txt
       - name: browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: ./.venv/bin/playwright install --with-deps chromium
+      - name: browser system dependencies (cached run)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: ./.venv/bin/playwright install-deps chromium
       - name: check
         run: ./check.sh
