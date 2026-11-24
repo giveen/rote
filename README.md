@@ -108,23 +108,46 @@ Honesty is a feature when the alternative is silent corruption:
 | `tests/` | 45 tests, `./check.sh` runs them |
 | `results/` | the evidence bundle: reports, certificates, trace, generated automations |
 
-## Run it
+## Getting started
+
+You need **Python 3.12+**, an **API key**, and a **browser** (Chromium).
 
 ```bash
 python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
 ./.venv/bin/playwright install chromium
-python3 -m http.server 8765 --directory app &      # the fixtures
+export MODEL_API_KEY=…        # or run `muse` once to sign in
+python3 -m http.server 8765 --directory app &
+PYTHONPATH=. ./.venv/bin/python -m rote doctor
+```
+
+When it is ready, `rote doctor` ends with:
+
+```
+✓ Python version: Python 3.14.8 (>= 3.12)
+✓ Dependencies: playwright, httpx imported
+✓ Chromium installed: Chromium launched
+✓ API key present: found in MODEL_API_KEY (environment)
+✓ API reachable: answered (1 tokens for one word)
+ready to learn
+```
+
+The two common failures and their one-line fixes:
+
+```
+✗ Chromium not installed      → ./.venv/bin/playwright install chromium
+✗ no API key found            → export MODEL_API_KEY=…  (or run `muse` once to sign in)
+```
+
+Then record once and learn from it:
+
+```bash
 PYTHONPATH=. ./.venv/bin/python -m rote record --url http://127.0.0.1:8765/app.html \
     --rows results/fresh_rows.json
 PYTHONPATH=. ./.venv/bin/python -m rote learn results/recordings/intake.mp4 \
     --url http://127.0.0.1:8765/app.html --rows results/fresh_rows.json
 ```
 
-`./check.sh` skips the two browser-dependent checks until `playwright install chromium` has been run, and CI installs it.
-
-Dependencies are pinned to the audited versions in `requirements.txt` (direct) and `requirements.lock.txt` (the full resolved set), so an install reproduces the exact environment the results were measured on. The audit in `tools/dependency_audit.py` reports zero known advisories for them; re-run it with `./.venv/bin/python tools/dependency_audit.py`, which rewrites `docs/dependencies.json`.
-
-`MODEL_API_KEY` comes from the environment, or from `~/.config/muse/auth.json`.
+`MODEL_API_KEY` comes from the environment, or from `~/.config/muse/auth.json`. `./check.sh` skips the browser-dependent checks until Chromium is installed. Dependencies are pinned to the audited versions in `requirements.txt` and `requirements.lock.txt`.
 
 ## Who wrote what
 
