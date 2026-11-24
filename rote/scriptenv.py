@@ -111,11 +111,18 @@ def _tick(page, label: str, want: bool, action: str = "") -> None:
 
 
 def _key(row: dict, key: str) -> str:
-    """Accept the row key in any casing, and the visible label as a fallback."""
+    """Accept the row key in any casing, and the visible label as a fallback.
+
+    `unit_cost` has to find `Unit Cost`, which is what a form label actually reads, so the
+    spaced form is tried in Title Case as well as lowercase.
+    """
     if key in row:
         return key
-    for candidate in (key.lower(), key.upper(), key.title(), key.replace("_", " "),
-                      key.replace(" ", "_")):
+    spaced = key.replace("_", " ")
+    variants = (key.lower(), key.upper(), key.title(),
+                spaced, spaced.lower(), spaced.upper(), spaced.title(),
+                key.replace(" ", "_"))
+    for candidate in variants:
         if candidate in row:
             return candidate
     raise KeyError(f"row has no value for {key!r}: {sorted(row)}")
@@ -125,6 +132,9 @@ _ns: dict = {}
 exec(compile(SCRIPT_ENV, "<script-env>", "exec"), _ns)
 
 _first_present = _ns["_first_present"]
+_key = _ns["_key"]
+_to_iso_date = _ns["_to_iso_date"]
+_truthy = _ns["_truthy"]
 field = _ns["_field"]
 button = _ns["_button"]
 fill = _ns["_fill"]
