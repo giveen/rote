@@ -1,0 +1,215 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/sauce.mp4",
+  "plan": {
+    "app": "Swag Labs",
+    "goal": "Log in, add the Sauce Labs Backpack to the cart, and complete checkout to place the order.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "standard_user",
+        "label": "Username"
+      },
+      {
+        "control": "text",
+        "example": "secret_sauce",
+        "label": "Password"
+      },
+      {
+        "control": "text",
+        "example": "Ada",
+        "label": "First Name"
+      },
+      {
+        "control": "text",
+        "example": "Lovelace",
+        "label": "Last Name"
+      },
+      {
+        "control": "text",
+        "example": "24070",
+        "label": "Zip/Postal Code"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "username",
+            "value": "standard_user"
+          },
+          {
+            "field": "password",
+            "value": "secret_sauce"
+          },
+          {
+            "field": "first_name",
+            "value": "Ada"
+          },
+          {
+            "field": "last_name",
+            "value": "Lovelace"
+          },
+          {
+            "field": "zip_postal_code",
+            "value": "24070"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Username",
+        "value": "standard_user",
+        "note": "Enter the username on the login form.",
+        "scope": "once"
+      },
+      {
+        "action": "type",
+        "target": "Password",
+        "value": "secret_sauce",
+        "note": "Enter the password on the login form.",
+        "scope": "once"
+      },
+      {
+        "action": "click",
+        "target": "Login",
+        "value": null,
+        "note": "Submit the login credentials to open the Products page.",
+        "scope": "once"
+      },
+      {
+        "action": "click",
+        "target": "Add to cart",
+        "value": null,
+        "note": "The 'Add to cart' button for the Sauce Labs Backpack ($29.99), the first product listed.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Cart",
+        "value": null,
+        "note": "The cart link at the top right of the page; its accessible name changes with the item count, so use the stable 'Cart' name.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Checkout",
+        "value": null,
+        "note": "Proceed from the Your Cart page to checkout.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "First Name",
+        "value": "{first_name}",
+        "note": "First input on the Checkout: Your Information form.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Last Name",
+        "value": "{last_name}",
+        "note": "Second input on the Checkout: Your Information form.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Zip/Postal Code",
+        "value": "{zip_postal_code}",
+        "note": "Third input on the Checkout: Your Information form.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Continue",
+        "value": null,
+        "note": "Proceed to the Checkout: Overview page to review payment, shipping, and price total.",
+        "scope": "each_row"
+      },
+      {
+        "action": "submit",
+        "target": "Finish",
+        "value": null,
+        "note": "Place the order from the Checkout: Overview page.",
+        "scope": "once"
+      }
+    ],
+    "repeat": {
+      "first": 4,
+      "last": 10
+    },
+    "expected_effect": "The Checkout: Complete page is displayed with 'Thank you for your order!' and a message that the order has been dispatched."
+  },
+  "script": "results/submission/sauce/sauce.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\""
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": false,
+          "detail": "at least one control rejected what was typed"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip_postal_code='20850'"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": false,
+          "detail": "expected something like \"The Checkout: Complete page is displayed with 'Thank you for your order!' and a message that the order has been dispatch\""
+        }
+      ],
+      "error": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\"",
+      "cost": 0.0018894959999999998
+    },
+    {
+      "attempt": 1,
+      "passed": true,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "1 row(s) through sauce.py"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 3 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        }
+      ],
+      "error": null,
+      "cost": 0.00510932
+    }
+  ],
+  "passed": true,
+  "ledger": {
+    "calls": 2,
+    "spent_usd": 0.005109,
+    "input_tokens": 3829,
+    "cached_tokens": 2480,
+    "output_tokens": 9929,
+    "reasoning_tokens": 8443,
+    "cache_hit_pct": 64.8
+  },
+  "elapsed_s": 24.9,
+  "fresh_data": true
+}

@@ -1,0 +1,7 @@
+call,stage,purpose,effort,input_tokens,cached_tokens,output_tokens,reasoning_tokens,seconds,usd,prompt_file
+1,intake,understand,max,2812,316,1788,1186,4.46,0.001145,000-intake-understand.json
+2,repair,repair1,max,2122,756,4490,3738,9.58,0.002385,001-repair-repair1.json
+3,vendors,understand,max,1820,316,2107,1575,5.11,0.001205,000-vendors-understand.json
+4,sauce,understand,max,1820,1724,3746,3002,8.08,0.001889,000-sauce-understand.json
+5,repair,repair1,max,2009,756,6183,5441,12.72,0.003220,001-repair-repair1.json
+TOTAL,,,,10583,3868,18314,14942,39.95,0.009844,

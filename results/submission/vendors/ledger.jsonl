@@ -1,0 +1,1 @@
+{"unit": "vendors", "purpose": "understand", "effort": "max", "input_tokens": 1820, "cached_tokens": 316, "output_tokens": 2107, "reasoning_tokens": 1575, "cost": 0.0012051639999999999, "seconds": 5.11, "ok": true, "note": "video vendors.mp4", "prompt_ref": "000-vendors-understand.json"}

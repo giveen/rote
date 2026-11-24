@@ -1,0 +1,179 @@
+{
+ "model": "muse-ember-1.0",
+ "input": [
+  {
+   "type": "message",
+   "role": "user",
+   "content": [
+    {
+     "type": "input_text",
+     "text": "You are watching a screen recording of someone using an internal web application, so that the work can be automated afterwards.\n\nDescribe the procedure, not the pixels. Someone who has never seen this app must be able\nto repeat the task from your description alone, with different data.\n\nRules:\n- Name controls by the label a person sees on screen. Never invent one.\n- `rows` holds the data the person entered, one object per repetition, keyed by a short lower_snake_case name of the field. If the task was performed once, there is one row.\n- `steps` is the procedure for ONE repetition, plus the actions that end the task (adding the line, submitting). Use `type`, `select`, `click`, `submit`, `navigate`, `read`.\n- Set `value` to the row key that fills that control, written as \"{field}\", not to the literal text from the recording. For clicks and submits, `value` is null.\n- `fields` lists every control the person touched, with the kind of control it is.\n- `expected_effect` is what is visibly different once the task has succeeded.\n- Accessible names change while a page is in use: a cart link reads \"Cart, empty\" before an\n  item is added and \"Cart, 1 item\" after. Name such a control by its stable part (\"Cart\"),\n  never by the part that moves.\n- Only describe actions the recording supports. If something is ambiguous, say so in the step's `note` instead of guessing silently.\n\nReturn JSON matching the schema."
+    },
+    {
+     "type": "input_file",
+     "file_id": "file-1171026845483388"
+    }
+   ]
+  }
+ ],
+ "reasoning": {
+  "effort": "max"
+ },
+ "text": {
+  "format": {
+   "type": "json_schema",
+   "name": "plan",
+   "schema": {
+    "type": "object",
+    "properties": {
+     "app": {
+      "type": "string"
+     },
+     "goal": {
+      "type": "string"
+     },
+     "fields": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "label": {
+         "type": "string"
+        },
+        "control": {
+         "type": "string",
+         "enum": [
+          "text",
+          "number",
+          "select",
+          "checkbox",
+          "file"
+         ]
+        },
+        "example": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "label",
+        "control",
+        "example"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "steps": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "action": {
+         "type": "string",
+         "enum": [
+          "type",
+          "select",
+          "click",
+          "submit",
+          "navigate",
+          "read",
+          "check",
+          "uncheck"
+         ]
+        },
+        "target": {
+         "type": "string"
+        },
+        "value": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "note": {
+         "type": "string"
+        },
+        "scope": {
+         "type": "string",
+         "enum": [
+          "each_row",
+          "once"
+         ]
+        }
+       },
+       "required": [
+        "action",
+        "target",
+        "value",
+        "note",
+        "scope"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "rows": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "cells": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "field": {
+            "type": "string"
+           },
+           "value": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "field",
+           "value"
+          ],
+          "additionalProperties": false
+         }
+        }
+       },
+       "required": [
+        "cells"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "repeat": {
+      "type": "object",
+      "properties": {
+       "first": {
+        "type": "integer"
+       },
+       "last": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "first",
+       "last"
+      ],
+      "additionalProperties": false
+     },
+     "expected_effect": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "app",
+     "goal",
+     "fields",
+     "steps",
+     "rows",
+     "repeat",
+     "expected_effect"
+    ],
+    "additionalProperties": false
+   },
+   "strict": true
+  }
+ },
+ "prompt_cache_key": "rote-understand-v1"
+}

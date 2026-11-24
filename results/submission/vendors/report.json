@@ -1,0 +1,210 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/vendors.mp4",
+  "plan": {
+    "app": "VendorDesk",
+    "goal": "Onboard a new vendor using the New vendor form",
+    "fields": [
+      {
+        "control": "text",
+        "example": "Nordlicht Logistik GmbH",
+        "label": "Company name"
+      },
+      {
+        "control": "select",
+        "example": "Germany",
+        "label": "Country"
+      },
+      {
+        "control": "text",
+        "example": "03/01/2026",
+        "label": "Contract start"
+      },
+      {
+        "control": "number",
+        "example": "420000",
+        "label": "Annual spend"
+      },
+      {
+        "control": "select",
+        "example": "Logistics",
+        "label": "Category"
+      },
+      {
+        "control": "text",
+        "example": "VD-2041",
+        "label": "Internal reference"
+      },
+      {
+        "control": "text",
+        "example": "Preferred carrier for the northern region.",
+        "label": "Notes"
+      },
+      {
+        "control": "checkbox",
+        "example": "yes",
+        "label": "Send welcome pack"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "company_name",
+            "value": "Nordlicht Logistik GmbH"
+          },
+          {
+            "field": "country",
+            "value": "Germany"
+          },
+          {
+            "field": "contract_start",
+            "value": "03/01/2026"
+          },
+          {
+            "field": "annual_spend",
+            "value": "420000"
+          },
+          {
+            "field": "category",
+            "value": "Logistics"
+          },
+          {
+            "field": "internal_reference",
+            "value": "VD-2041"
+          },
+          {
+            "field": "notes",
+            "value": "Preferred carrier for the northern region."
+          },
+          {
+            "field": "send_welcome_pack",
+            "value": "yes"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Company name",
+        "value": "{company_name}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Country",
+        "value": "{country}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Contract start",
+        "value": "{contract_start}",
+        "note": "Entered in mm/dd/yyyy format as shown in the field.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Annual spend",
+        "value": "{annual_spend}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Category",
+        "value": "{category}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Internal reference",
+        "value": "{internal_reference}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Notes",
+        "value": "{notes}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "check",
+        "target": "Send welcome pack",
+        "value": "{send_welcome_pack}",
+        "note": "",
+        "scope": "each_row"
+      },
+      {
+        "action": "submit",
+        "target": "Create vendor",
+        "value": null,
+        "note": "",
+        "scope": "once"
+      }
+    ],
+    "repeat": {
+      "first": 1,
+      "last": 1
+    },
+    "expected_effect": "A success banner 'Vendor created and welcome pack queued.' appears at the top of the form, and the CREATED panel on the right lists the new vendor's company name, country, contract start, annual spend, category, reference, notes, and welcome pack status."
+  },
+  "script": "results/submission/vendors/vendors.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": true,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "1 row(s) through vendors.py"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 8 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "all 8 values found"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the app stored exactly the rows we sent",
+          "ok": true,
+          "detail": "1/1 rows stored as sent"
+        },
+        {
+          "name": "the task was submitted",
+          "ok": true,
+          "detail": "1 record(s) confirmed by the app"
+        }
+      ],
+      "error": null,
+      "cost": 0.0012051639999999999
+    }
+  ],
+  "passed": true,
+  "ledger": {
+    "calls": 1,
+    "spent_usd": 0.001205,
+    "input_tokens": 1820,
+    "cached_tokens": 316,
+    "output_tokens": 2107,
+    "reasoning_tokens": 1575,
+    "cache_hit_pct": 17.4
+  },
+  "elapsed_s": 8.4,
+  "fresh_data": true
+}

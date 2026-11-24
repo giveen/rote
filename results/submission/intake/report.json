@@ -1,0 +1,251 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/intake.mp4",
+  "plan": {
+    "app": "Stockroom",
+    "goal": "Log goods received against a purchase order on the Parts intake page by adding each part as a line and submitting the intake.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "BRK-2041",
+        "label": "SKU"
+      },
+      {
+        "control": "text",
+        "example": "Brake pad set, front",
+        "label": "Description"
+      },
+      {
+        "control": "number",
+        "example": "12",
+        "label": "Quantity"
+      },
+      {
+        "control": "number",
+        "example": "18.40",
+        "label": "Unit cost"
+      },
+      {
+        "control": "select",
+        "example": "Northwind Supply",
+        "label": "Supplier"
+      },
+      {
+        "control": "select",
+        "example": "Aisle 4 \u00b7 Bay 2",
+        "label": "Location"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "sku",
+            "value": "BRK-2041"
+          },
+          {
+            "field": "description",
+            "value": "Brake pad set, front"
+          },
+          {
+            "field": "quantity",
+            "value": "12"
+          },
+          {
+            "field": "unit_cost",
+            "value": "18.40"
+          },
+          {
+            "field": "supplier",
+            "value": "Northwind Supply"
+          },
+          {
+            "field": "location",
+            "value": "Aisle 4 \u00b7 Bay 2"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "field": "sku",
+            "value": "FLT-1180"
+          },
+          {
+            "field": "description",
+            "value": "Oil filter, spin-on"
+          },
+          {
+            "field": "quantity",
+            "value": "40"
+          },
+          {
+            "field": "unit_cost",
+            "value": "6.25"
+          },
+          {
+            "field": "supplier",
+            "value": "Bergen Parts"
+          },
+          {
+            "field": "location",
+            "value": "Aisle 7 \u00b7 Bay 1"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "SKU",
+        "value": "{sku}",
+        "note": "Enter the part SKU.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Description",
+        "value": "{description}",
+        "note": "Enter the part description.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Quantity",
+        "value": "{quantity}",
+        "note": "Enter the quantity received.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Unit cost",
+        "value": "{unit_cost}",
+        "note": "Enter the cost per unit.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Supplier",
+        "value": "{supplier}",
+        "note": "Choose the supplier from the dropdown.",
+        "scope": "each_row"
+      },
+      {
+        "action": "select",
+        "target": "Location",
+        "value": "{location}",
+        "note": "Choose the storage location from the dropdown.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Add line",
+        "value": null,
+        "note": "Add the completed line to the table below; the form then clears for the next line.",
+        "scope": "each_row"
+      },
+      {
+        "action": "submit",
+        "target": "Submit intake",
+        "value": null,
+        "note": "After all lines are added, submit the intake.",
+        "scope": "once"
+      }
+    ],
+    "repeat": {
+      "first": 1,
+      "last": 7
+    },
+    "expected_effect": "The entered lines appear in the table below the form with SKU, Description, Qty, Unit Cost, Supplier, and Location, the intake form is cleared to its placeholders, and a green confirmation at the bottom right states 'Intake submitted \u2014 2 lines recorded.'"
+  },
+  "script": "results/submission/intake/intake.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "2 row(s) through intake.py"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 12 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the app stored exactly the rows we sent",
+          "ok": false,
+          "detail": "sent 2 row(s), the app holds 1"
+        },
+        {
+          "name": "the task was submitted",
+          "ok": true,
+          "detail": "1 record(s) confirmed by the app"
+        }
+      ],
+      "error": null,
+      "cost": 0.001144864
+    },
+    {
+      "attempt": 1,
+      "passed": true,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "2 row(s) through intake.py"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 12 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "all 12 values found"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the app stored exactly the rows we sent",
+          "ok": true,
+          "detail": "2/2 rows stored as sent"
+        },
+        {
+          "name": "the task was submitted",
+          "ok": true,
+          "detail": "2 record(s) confirmed by the app"
+        }
+      ],
+      "error": null,
+      "cost": 0.003529488
+    }
+  ],
+  "passed": true,
+  "ledger": {
+    "calls": 2,
+    "spent_usd": 0.003529,
+    "input_tokens": 4934,
+    "cached_tokens": 1072,
+    "output_tokens": 6278,
+    "reasoning_tokens": 4924,
+    "cache_hit_pct": 21.7
+  },
+  "elapsed_s": 17.6,
+  "fresh_data": true
+}
