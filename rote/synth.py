@@ -113,6 +113,7 @@ def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
         '    """One repetition of the task."""',
     ]
     body += [_line(s) for s in row_steps] or ["    pass"]
+    body.append('    _mark(page, "iteration")')
 
     def block(steps) -> str:
         lines = [_line(s, "    ") for s in steps]

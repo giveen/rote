@@ -13,6 +13,18 @@ from __future__ import annotations
 DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
 
 
+EVENTS: list = []
+
+
+def _mark(page, label: str) -> None:
+    """Record where an iteration ended, so "it looped three times" is observable rather than
+    assumed. An app that exposes no state still tells you which page it is on."""
+    try:
+        EVENTS.append((label, page.url))
+    except Exception:
+        pass
+
+
 def _first_present(candidates, timeout_ms: int = 4000):
     """The first candidate that actually shows up.
 

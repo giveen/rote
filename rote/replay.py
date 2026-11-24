@@ -32,6 +32,7 @@ class ReplayResult:
     end_state: Any = None
     page_text: str = ""
     inventory: dict = field(default_factory=dict)
+    events: list = field(default_factory=list)
     screenshot: Path | None = None
     seconds: float = 0.0
 
@@ -93,6 +94,10 @@ def replay(script: Path, url: str, rows: list[dict[str, str]], *,
             res.error = f"{type(e).__name__}: {e}".strip()
             res.checks.append(Check("script runs on fresh data", False, res.error[:400]))
         try:
+            res.events = list(getattr(mod, "EVENTS", []))
+        except Exception:
+            res.events = []
+        try:
             res.end_state = page.evaluate("() => window.__submitted ?? null")
             res.page_text = page.inner_text("body")
             res.inventory = inventory(page)
@@ -107,6 +112,7 @@ def replay(script: Path, url: str, rows: list[dict[str, str]], *,
                 pass
         browser.close()
 
+    res.checks.extend(_cycles(res.events, len(rows)))
     res.checks.extend(_judge_effect(res.end_state, res.page_text, rows,
                                     expected_effect=expected_effect,
                                     ran_clean=res.error is None))
@@ -229,6 +235,51 @@ def _reached_end_state(flat_page: str, expected_effect: str) -> bool | None:
         return None
     hits = [w for w in distinctive if w in flat_page]
     return len(hits) >= 1
+
+
+COMMITTING = {"click", "submit"}
+
+
+def structural_checks(plan_steps: list, repeat: tuple[int, int] | None,
+                      n_rows: int) -> list[Check]:
+    """Checks that can be made before running anything, from the plan's shape alone.
+
+    The important one: if more than one row has to be processed, the repeating block has to
+    contain something that *commits* a row — a click or a submit — otherwise every iteration
+    types into the same form and overwrites the one before it. An app that does not expose its
+    own state cannot reveal that mistake afterwards, so it has to be caught here.
+    """
+    if n_rows <= 1 or not repeat:
+        return []
+    first, last = repeat
+    inside = [s for i, s in enumerate(plan_steps, 1) if first <= i <= last]
+    commits = [s for s in inside if s.action in COMMITTING]
+    if commits:
+        return [Check("the repeating block commits each row", True,
+                      f"{len(commits)} committing step(s) inside steps {first}–{last}")]
+    return [Check(
+        "the repeating block commits each row", False,
+        f"steps {first}–{last} only enter data, with no click or submit, so {n_rows} rows "
+        f"would overwrite the same form and produce one result instead of {n_rows}")]
+
+
+def _cycles(events: list, n_rows: int) -> list[Check]:
+    """Did the loop really go round once per row, ending each time on the same page?
+
+    A block that types into one form three times also "runs three times", but it never returns
+    to the state it started from, so the pages it ends on tell the two apart.
+    """
+    if n_rows <= 1:
+        return []
+    urls = [url for label, url in events if label == "iteration"]
+    if len(urls) != n_rows:
+        return [Check("the loop completed one cycle per row", False,
+                      f"{len(urls)} iteration(s) recorded for {n_rows} row(s)")]
+    if len(set(urls)) > 2:
+        return [Check("the loop completed one cycle per row", False,
+                      f"each iteration ended on a different page: {sorted(set(urls))[:3]}")]
+    return [Check("the loop completed one cycle per row", True,
+                  f"{n_rows} iterations, each ending on {urls[0].rsplit('/', 1)[-1] or '/'}")]
 
 
 def _records(end_state: Any) -> list[dict] | None:

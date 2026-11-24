@@ -17,7 +17,7 @@ from .certify import write_certificate
 from .client import BudgetExceeded, Ledger
 from .plan import Plan
 from .record import intake_session, record, session_from_json, vendor_session
-from .replay import ReplayResult, replay
+from .replay import ReplayResult, replay, structural_checks
 from .repair import diff as plan_diff, repair
 from .synth import write_script
 from .trace import write as write_trace
@@ -115,6 +115,9 @@ def cmd_learn(args: argparse.Namespace) -> int:
                         screenshot=out / f"proof_attempt{attempt + 1}.png",
                         headless=not args.headed,
                         expected_effect=plan.expected_effect)
+        # A block that does not commit cannot iterate, whatever the app reports afterwards.
+        result.checks.extend(structural_checks(plan.steps, plan.repeat, len(fresh_rows)))
+        result.passed = all(c.ok for c in result.checks)
         attempts.append({
             "attempt": attempt,
             "passed": result.passed,

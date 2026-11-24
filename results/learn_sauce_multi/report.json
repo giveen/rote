@@ -1,0 +1,318 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/sauce.mp4",
+  "plan": {
+    "app": "Swag Labs",
+    "goal": "Log in to Swag Labs, purchase the Sauce Labs Backpack, and complete checkout with the entered customer information.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "standard_user",
+        "label": "Username"
+      },
+      {
+        "control": "text",
+        "example": "secret_sauce",
+        "label": "Password"
+      },
+      {
+        "control": "text",
+        "example": "Ada",
+        "label": "First Name"
+      },
+      {
+        "control": "text",
+        "example": "Lovelace",
+        "label": "Last Name"
+      },
+      {
+        "control": "text",
+        "example": "94107",
+        "label": "Zip/Postal Code"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "username",
+            "value": "standard_user"
+          },
+          {
+            "field": "password",
+            "value": "secret_sauce"
+          },
+          {
+            "field": "first_name",
+            "value": "Ada"
+          },
+          {
+            "field": "last_name",
+            "value": "Lovelace"
+          },
+          {
+            "field": "zip_postal_code",
+            "value": "94107"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Username",
+        "value": "standard_user",
+        "note": "On the Swag Labs login page. Login is done once before the per-row loop, so this uses the literal username from the recording, not per-row data.",
+        "scope": "once"
+      },
+      {
+        "action": "type",
+        "target": "Password",
+        "value": "secret_sauce",
+        "note": "The password is masked, so the entered value is not visible in the recording; the login page states that the password for all listed users is secret_sauce. Login is done once before the per-row loop, so this uses the literal password from the recording, not per-row data.",
+        "scope": "once"
+      },
+      {
+        "action": "click",
+        "target": "Login",
+        "value": null,
+        "note": "Logs in and navigates to the Products page. Done once, before repeating the purchase per row.",
+        "scope": "once"
+      },
+      {
+        "action": "click",
+        "target": "Add to cart",
+        "value": null,
+        "note": "Use the 'Add to cart' button for the Sauce Labs Backpack, priced at $29.99, not any other product's button.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Cart",
+        "value": null,
+        "note": "The top-right cart icon; its accessible name changes with the item count, so it is named by its stable part 'Cart'.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Checkout",
+        "value": null,
+        "note": "On the cart page, advances to checkout.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "First Name",
+        "value": "{first_name}",
+        "note": "First of the three fields on 'Checkout: Your Information'; its placeholder is not legible in the recording, but it precedes Last Name and Zip/Postal Code.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Last Name",
+        "value": "{last_name}",
+        "note": "Second of the three fields on 'Checkout: Your Information'.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Zip/Postal Code",
+        "value": "{zip_postal_code}",
+        "note": "Third field on 'Checkout: Your Information'.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Continue",
+        "value": null,
+        "note": "Advances to the checkout overview page showing payment, shipping, and price total.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Finish",
+        "value": null,
+        "note": "On the checkout overview page, completes the order for this row; included in the repeating block so each row commits a purchase.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Back Home",
+        "value": null,
+        "note": "After 'Finish' the page is 'Checkout: Complete!' with no 'Add to cart' button, so return to the Products page via 'Back Home' at the end of each row iteration, making 'Add to cart' available again for the next row's purchase.",
+        "scope": "each_row"
+      }
+    ],
+    "repeat": {
+      "first": 4,
+      "last": 12
+    },
+    "expected_effect": "The Products page (inventory.html) is displayed after the final Back Home step, showing Sauce Labs Backpack and other products with Add to cart buttons, the Sort products dropdown, and Cart, empty in the header, after each row's purchase was completed and the user returned home for the next row."
+  },
+  "script": "results/learn_sauce_multi/sauce.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\""
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": false,
+          "detail": "0 iteration(s) recorded for 3 row(s)"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": false,
+          "detail": "at least one control rejected what was typed"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip_postal_code='20850', row 2 first_name='Katherine', row 2 last_name='Johnson', row 2 zip_postal_code='24740'"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": false,
+          "detail": "expected something like \"The 'Checkout: Complete!' page is displayed with a check mark and 'Thank you for your order!' message stating that the o\""
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": false,
+          "detail": "steps 1\u20131 only enter data, with no click or submit, so 3 rows would overwrite the same form and produce one result instead of 3"
+        }
+      ],
+      "error": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip_postal_code']\"",
+      "cost": 0.002163496
+    },
+    {
+      "attempt": 1,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "LookupError: none of these appeared within 4000ms: [<Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:role=button[name=\"Add to cart\"i]'>, <Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:role=link[name=\"Add to cart\"i]'>, <Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-comp"
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": false,
+          "detail": "1 iteration(s) recorded for 3 row(s)"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": false,
+          "detail": "at least one control rejected what was typed"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": true,
+          "detail": "5 committing step(s) inside steps 4\u201311"
+        }
+      ],
+      "error": "LookupError: none of these appeared within 4000ms: [<Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:role=button[name=\"Add to cart\"i]'>, <Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:role=link[name=\"Add to cart\"i]'>, <Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:role=menuitem[name=\"Add to cart\"i]'>, <Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:role=tab[name=\"Add to cart\"i]'>, <Locator frame=<Frame name= url='https://www.saucedemo.com/checkout-complete.html'> selector='internal:text=\"Add to cart\"i'>]",
+      "cost": 0.00585112
+    },
+    {
+      "attempt": 2,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "3 row(s) through sauce.py"
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": true,
+          "detail": "3 iterations, each ending on inventory.html"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 9 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip_postal_code='20850', row 2 first_name='Katherine', row 2 last_name='Johnson', row 2 zip_postal_code='24740'"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": false,
+          "detail": "expected something like \"The 'Checkout: Complete!' page is displayed with a check mark and 'Thank you for your order!' message stating that the o\""
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": true,
+          "detail": "6 committing step(s) inside steps 4\u201312"
+        }
+      ],
+      "error": null,
+      "cost": 0.007353544
+    },
+    {
+      "attempt": 3,
+      "passed": true,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": true,
+          "detail": "3 row(s) through sauce.py"
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": true,
+          "detail": "3 iterations, each ending on inventory.html"
+        },
+        {
+          "name": "every value was accepted by its control",
+          "ok": true,
+          "detail": "all 9 values were typed and confirmed on screen"
+        },
+        {
+          "name": "the values are visible on the final page",
+          "ok": true,
+          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
+        },
+        {
+          "name": "the app reached the state the recording ended in",
+          "ok": true,
+          "detail": "matched the expected end state"
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": true,
+          "detail": "6 committing step(s) inside steps 4\u201312"
+        }
+      ],
+      "error": null,
+      "cost": 0.01369168
+    }
+  ],
+  "passed": true,
+  "ledger": {
+    "calls": 4,
+    "spent_usd": 0.013692,
+    "input_tokens": 9512,
+    "cached_tokens": 4120,
+    "output_tokens": 26272,
+    "reasoning_tokens": 22794,
+    "cache_hit_pct": 43.3
+  },
+  "elapsed_s": 84.2,
+  "fresh_data": true
+}
