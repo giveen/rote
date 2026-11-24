@@ -115,6 +115,9 @@ def cmd_trace(args: argparse.Namespace) -> int:
 
 
 def cmd_record(args: argparse.Namespace) -> int:
+    if not args.session and not (args.url and args.rows):
+        print("record needs --session, or --url with --rows")
+        return 2
     if args.session:
         session = session_from_json(Path(args.session))
     else:
@@ -213,7 +216,7 @@ def main(argv: list[str] | None = None) -> int:
     learn.set_defaults(func=cmd_learn)
 
     rec = sub.add_parser("record", help="record a session against an app")
-    rec.add_argument("--url", required=True)
+    rec.add_argument("--url", help="the app to record against (not needed with --session)")
     rec.add_argument("--rows", help="JSON with the data to enter (intake task)")
     rec.add_argument("--session", help="JSON session file for any other task")
     rec.add_argument("--task", default="intake", choices=["intake", "vendors"])

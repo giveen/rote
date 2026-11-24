@@ -12,24 +12,43 @@ from __future__ import annotations
 from playwright.sync_api import Page
 
 
+def _first_present(candidates, timeout_ms: int = 4000):
+    """The first candidate that actually shows up.
+
+    .count() answers about *this instant*, which is wrong on any app that navigates: the
+    control appears a moment later. Waiting per candidate keeps the readable label-first
+    strategy without turning a slow page into a failure.
+    """
+    for loc in candidates:
+        try:
+            loc.first.wait_for(state="visible", timeout=timeout_ms)
+            return loc.first
+        except Exception:
+            continue
+    raise LookupError(f"none of these appeared within {timeout_ms}ms: {candidates}")
+
+
 def field(page: Page, label: str):
     """A form control by its visible label, as a human reads it."""
-    by_label = page.get_by_label(label, exact=False)
-    if by_label.count() > 0:
-        return by_label.first
-    # some apps put the label above without wiring it: fall back to placeholder text
-    by_placeholder = page.get_by_placeholder(label, exact=False)
-    if by_placeholder.count() > 0:
-        return by_placeholder.first
-    return page.locator(f"[name='{label}']").first
+    return _first_present([
+        page.get_by_label(label, exact=False),
+        # some apps put the label above without wiring it: fall back to placeholder text
+        page.get_by_placeholder(label, exact=False),
+        page.locator(f"[name='{label}']"),
+    ])
 
 
 def button(page: Page, name: str):
-    """A button by its accessible name."""
-    by_role = page.get_by_role("button", name=name, exact=False)
-    if by_role.count() > 0:
-        return by_role.first
-    return page.get_by_text(name, exact=False).first
+    """Something clickable, by the name a person reads on it.
+
+    Plenty of apps use a link or a styled div where a person sees a button, so the role is
+    a hint, not a requirement.
+    """
+    return _first_present([
+        *(page.get_by_role(role, name=name, exact=False)
+          for role in ("button", "link", "menuitem", "tab")),
+        page.get_by_text(name, exact=False),
+    ])
 
 
 def select_options(page: Page, label: str) -> list[str]:

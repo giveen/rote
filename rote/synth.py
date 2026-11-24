@@ -99,10 +99,12 @@ def _select(page: Page, label: str, value: str) -> None:
 FOOTER = '''
 
 def run(page: Page, rows: list[dict[str, str]]) -> None:
-    """Perform the task once for every row."""
+    """Set the task up once, perform it for every row, then finish once."""
+    row = rows[0] if rows else {{}}
+{setup}
     for row in rows:
         _one(page, row)
-    {once}
+{finish}
 '''
 
 
@@ -159,9 +161,22 @@ def _key(row: dict, key: str) -> str:
 
 
 def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
-    """Plan to a standalone Playwright module."""
-    row_steps = [s for s in plan.steps if s.scope != "once"]
-    once_steps = [s for s in plan.steps if s.scope == "once"]
+    """Plan to a standalone Playwright module.
+
+    Setup has to run before the repetition and finishing after it, so the step order in the
+    plan decides where each `once` step goes: everything before the first per-row step is
+    setup, everything after the last one is teardown.
+    """
+    scopes = [s.scope for s in plan.steps]
+    per_row_index = [i for i, sc in enumerate(scopes) if sc != "once"]
+    if per_row_index:
+        first, last = per_row_index[0], per_row_index[-1]
+    else:
+        first, last = len(plan.steps), len(plan.steps)
+
+    setup_steps = plan.steps[:first]
+    row_steps = [s for i, s in enumerate(plan.steps) if first <= i <= last and s.scope != "once"]
+    finish_steps = [s for i, s in enumerate(plan.steps) if i > last and s.scope == "once"]
 
     body = [
         "",
@@ -170,7 +185,9 @@ def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
     ]
     body += [_line(s) for s in row_steps] or ["    pass"]
 
-    once = "\n    ".join(_line(s, "") for s in once_steps) or "pass"
+    def block(steps) -> str:
+        lines = [_line(s, "    ") for s in steps]
+        return "\n".join(lines) if lines else "    pass"
 
     parts = [
         HEADER.format(app=plan.app or "the app", recording=recording,
@@ -179,7 +196,7 @@ def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
                       fields=", ".join(f"`{k}`" for k in _row_keys(plan)) or "the fields"),
         _key_lookup(plan),
         "\n".join(body),
-        FOOTER.format(once=once),
+        FOOTER.format(setup=block(setup_steps), finish=block(finish_steps)),
     ]
     return "\n".join(parts)
 

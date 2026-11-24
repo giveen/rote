@@ -1,15 +1,15 @@
 # rote report — intake.mp4
 
 - **1 attempt(s)**, last replay **passed**
-- **$0.00112** over 1 model calls (2,756 in / 2,204 out, 96% cached)
-- wall time 9s
+- **$0.00122** over 1 model calls (2,756 in / 1,895 out, 0% cached)
+- wall time 10s
 - proof data: fresh — never in the recording
 
 ## What it understood
 
-**Goal.** Log goods received against a purchase order on the Parts intake page by entering one or more part lines and submitting the intake.
+**Goal.** Log goods received against a purchase order by adding parts intake lines and submitting the intake.
 
-**Success looks like.** Each entered line appears as a row in the table below the form (SKU, Description, QTY, Unit cost, Supplier, Location) and the form resets to its placeholders; after submitting, a confirmation toast appears at the bottom right stating 'Intake submitted — 1 line recorded.'
+**Success looks like.** Both entered lines appear in the intake table below the form with SKU, description, quantity, unit cost, supplier and location; the entry form is cleared to its placeholders and a confirmation toast appears at the bottom right saying Intake submitted.
 
 | step | action | target | value | scope |
 |---|---|---|---|---|
@@ -55,7 +55,7 @@
 | script runs on fresh data | ✅ | 2 row(s) through intake.py |
 | every value reached the page | ✅ | all 12 values found |
 | the app stored exactly the rows we sent | ✅ | 2/2 rows stored as sent |
-| the task was submitted | ✅ | 2 line(s) confirmed by the app |
+| the task was submitted | ✅ | 2 record(s) confirmed by the app |
 
 After the replay: `proof_attempt1.png`
 
@@ -67,7 +67,7 @@ After the replay: `proof_attempt1.png`
 
 | what | calls | tokens in | cached | tokens out | $ |
 |---|---|---|---|---|---|
-| intake | 1 | 2,756 | 2,659 | 2,204 | 0.00112 |
+| intake | 1 | 2,756 | 0 | 1,895 | 0.00122 |
 
 Raw per-call trace: `results/learn/ledger.jsonl`
 

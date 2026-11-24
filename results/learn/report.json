@@ -2,7 +2,7 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/intake.mp4",
   "plan": {
     "app": "Stockroom",
-    "goal": "Log goods received against a purchase order on the Parts intake page by entering one or more part lines and submitting the intake.",
+    "goal": "Log goods received against a purchase order by adding parts intake lines and submitting the intake.",
     "fields": [
       {
         "control": "text",
@@ -98,60 +98,60 @@
         "action": "type",
         "target": "SKU",
         "value": "{sku}",
-        "note": "Top-left text field in the Parts intake form; placeholder shows an example SKU.",
+        "note": "Enter the part SKU.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Description",
         "value": "{description}",
-        "note": "Text field next to SKU in the top row of the form.",
+        "note": "Enter the part description.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Quantity",
         "value": "{quantity}",
-        "note": "Top-right numeric field; replaces the default 0.",
+        "note": "Enter the quantity received.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Unit cost",
         "value": "{unit_cost}",
-        "note": "Second row, first field; replaces the default 0.00.",
+        "note": "Enter the unit cost.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Supplier",
         "value": "{supplier}",
-        "note": "Dropdown initially showing 'Choose...'; select the supplier option matching the row data. Full option list is not visible in the recording.",
+        "note": "Choose the supplier from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Location",
         "value": "{location}",
-        "note": "Dropdown initially showing 'Choose...'; select the location option matching the row data. Full option list is not visible in the recording.",
+        "note": "Choose the storage location from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Add line",
         "value": null,
-        "note": "Blue button below the form fields. Adds the current form values as a row in the table below and clears the form for the next line; repeat all preceding steps for each additional line.",
+        "note": "Add the completed line to the intake table; the form then clears for the next line.",
         "scope": "each_row"
       },
       {
         "action": "submit",
         "target": "Submit intake",
         "value": null,
-        "note": "Blue button below the lines table, only after all lines have been added. Note: the confirmation toast shown says 'Intake submitted \u2014 1 line recorded.' even though two lines are displayed in the table; this wording is reproduced as seen.",
+        "note": "Submit the intake after all lines have been added.",
         "scope": "once"
       }
     ],
-    "expected_effect": "Each entered line appears as a row in the table below the form (SKU, Description, QTY, Unit cost, Supplier, Location) and the form resets to its placeholders; after submitting, a confirmation toast appears at the bottom right stating 'Intake submitted \u2014 1 line recorded.'"
+    "expected_effect": "Both entered lines appear in the intake table below the form with SKU, description, quantity, unit cost, supplier and location; the entry form is cleared to its placeholders and a confirmation toast appears at the bottom right saying Intake submitted."
   },
   "script": "results/learn/intake.py",
   "attempts": [
@@ -177,23 +177,23 @@
         {
           "name": "the task was submitted",
           "ok": true,
-          "detail": "2 line(s) confirmed by the app"
+          "detail": "2 record(s) confirmed by the app"
         }
       ],
       "error": null,
-      "cost": 0.0011223359999999998
+      "cost": 0.0012231
     }
   ],
   "passed": true,
   "ledger": {
     "calls": 1,
-    "spent_usd": 0.001122,
+    "spent_usd": 0.001223,
     "input_tokens": 2756,
-    "cached_tokens": 2659,
-    "output_tokens": 2204,
-    "reasoning_tokens": 1335,
-    "cache_hit_pct": 96.5
+    "cached_tokens": 0,
+    "output_tokens": 1895,
+    "reasoning_tokens": 1175,
+    "cache_hit_pct": 0.0
   },
-  "elapsed_s": 9.0,
+  "elapsed_s": 9.7,
   "fresh_data": true
 }

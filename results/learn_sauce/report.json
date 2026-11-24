@@ -1,0 +1,216 @@
+{
+  "video": "/mnt/storage/Projects/rote/results/recordings/sauce.mp4",
+  "plan": {
+    "app": "Swag Labs",
+    "goal": "Log in, add the Sauce Labs Backpack to the cart, and complete checkout.",
+    "fields": [
+      {
+        "control": "text",
+        "example": "standard_user",
+        "label": "Username"
+      },
+      {
+        "control": "text",
+        "example": "secret_sauce",
+        "label": "Password"
+      },
+      {
+        "control": "text",
+        "example": "Ada",
+        "label": "First Name"
+      },
+      {
+        "control": "text",
+        "example": "Lovelace",
+        "label": "Last Name"
+      },
+      {
+        "control": "text",
+        "example": "21037",
+        "label": "Zip/Postal Code"
+      }
+    ],
+    "rows": [
+      {
+        "cells": [
+          {
+            "field": "username",
+            "value": "standard_user"
+          },
+          {
+            "field": "password",
+            "value": "secret_sauce"
+          },
+          {
+            "field": "first_name",
+            "value": "Ada"
+          },
+          {
+            "field": "last_name",
+            "value": "Lovelace"
+          },
+          {
+            "field": "zip_postal_code",
+            "value": "21037"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "action": "type",
+        "target": "Username",
+        "value": "standard_user",
+        "note": "Username field on the login form; the accepted usernames are listed below the form.",
+        "scope": "once"
+      },
+      {
+        "action": "type",
+        "target": "Password",
+        "value": "secret_sauce",
+        "note": "Password field is masked; the value is the password shown on the login page for all accepted users.",
+        "scope": "once"
+      },
+      {
+        "action": "click",
+        "target": "Login",
+        "value": null,
+        "note": "Logs in and opens the Products page.",
+        "scope": "once"
+      },
+      {
+        "action": "click",
+        "target": "Sauce Labs Backpack",
+        "value": null,
+        "note": "Opens the Sauce Labs Backpack details page, where the Add to cart button is unique to that product.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Add to cart",
+        "value": null,
+        "note": "Use the 'Add to cart' button for the Sauce Labs Backpack ($29.99) on its details page. The cart badge changes to 1.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Cart",
+        "value": null,
+        "note": "Cart link at the top right of the page; opens the 'Your Cart' page.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Checkout",
+        "value": null,
+        "note": "Opens 'Checkout: Your Information'.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "First Name",
+        "value": "{first_name}",
+        "note": "First of the three fields in the 'Your Information' form.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Last Name",
+        "value": "{last_name}",
+        "note": "Second field in the 'Your Information' form.",
+        "scope": "each_row"
+      },
+      {
+        "action": "type",
+        "target": "Zip/Postal Code",
+        "value": "{zip}",
+        "note": "Third field in the 'Your Information' form; the exact digits are small/ambiguous in the recording and are transcribed as best visible, so verify the zip code.",
+        "scope": "each_row"
+      },
+      {
+        "action": "click",
+        "target": "Continue",
+        "value": null,
+        "note": "Opens 'Checkout: Overview' showing the item, payment and shipping information, and price total.",
+        "scope": "each_row"
+      },
+      {
+        "action": "submit",
+        "target": "Finish",
+        "value": null,
+        "note": "Places the order and opens the confirmation page.",
+        "scope": "once"
+      }
+    ],
+    "expected_effect": "The 'Checkout: Complete!' page is displayed with a green checkmark and the message 'Thank you for your order!' and a note that the order has been dispatched."
+  },
+  "script": "results/learn_sauce/sauce.py",
+  "attempts": [
+    {
+      "attempt": 0,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip']\""
+        },
+        {
+          "name": "every value reached the page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip='20850'"
+        }
+      ],
+      "error": "KeyError: \"row has no value for 'username': ['first_name', 'last_name', 'zip']\"",
+      "cost": 0.0020641319999999998
+    },
+    {
+      "attempt": 1,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "LookupError: no button named 'Add to cart' on https://www.saucedemo.com/inventory.html"
+        },
+        {
+          "name": "every value reached the page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip='20850'"
+        }
+      ],
+      "error": "LookupError: no button named 'Add to cart' on https://www.saucedemo.com/inventory.html",
+      "cost": 0.008702344
+    },
+    {
+      "attempt": 2,
+      "passed": false,
+      "checks": [
+        {
+          "name": "script runs on fresh data",
+          "ok": false,
+          "detail": "LookupError: no button named 'Sauce Labs Backpack' on https://www.saucedemo.com/inventory.html"
+        },
+        {
+          "name": "every value reached the page",
+          "ok": false,
+          "detail": "missing: row 1 first_name='Grace', row 1 last_name='Hopper', row 1 zip='20850'"
+        }
+      ],
+      "error": "LookupError: no button named 'Sauce Labs Backpack' on https://www.saucedemo.com/inventory.html",
+      "cost": 0.01683448
+    }
+  ],
+  "passed": false,
+  "ledger": {
+    "calls": 3,
+    "spent_usd": 0.016834,
+    "input_tokens": 5559,
+    "cached_tokens": 3270,
+    "output_tokens": 33185,
+    "reasoning_tokens": 30775,
+    "cache_hit_pct": 58.8
+  },
+  "elapsed_s": 73.5,
+  "fresh_data": true
+}

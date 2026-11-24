@@ -1,1 +1,1 @@
-{"unit": "intake", "purpose": "understand", "effort": "max", "input_tokens": 2756, "cached_tokens": 2659, "output_tokens": 2204, "reasoning_tokens": 1335, "cost": 0.0011223359999999998, "seconds": 5.13, "ok": true, "note": "video intake.mp4"}
+{"unit": "intake", "purpose": "understand", "effort": "max", "input_tokens": 2756, "cached_tokens": 0, "output_tokens": 1895, "reasoning_tokens": 1175, "cost": 0.0012231, "seconds": 4.61, "ok": true, "note": "video intake.mp4", "prompt_ref": "000-intake-understand.json"}

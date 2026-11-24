@@ -25,9 +25,14 @@ Rules:
 - If a dropdown rejected a value, the data was wrong for that app — keep the plan and say \
 so in the step's note instead of changing the target.
 - Keep `rows` as they are: the values are the user's data, not something to edit.
-- Keep every `{field}` placeholder exactly as it is. Never replace a placeholder with the
-  literal text from the recording: the whole point is that the automation takes different
-  data. A literal value in a step is a bug.
+- In an `each_row` step, keep every `{field}` placeholder exactly as it is. Never replace
+  one with the literal text from the recording: the whole point is that the automation
+  takes different data. A literal in an `each_row` step is a bug.
+- In a `once` step, a literal value from the recording is correct and preferred: signing in
+  and navigating do not change per row. A `{placeholder}` in a `once` step demands data the
+  user has no reason to supply.
+- If a run failed because a row was missing a value, the step is probably setup that should
+  be marked `once` rather than the row being incomplete.
 - Keep `scope` marks: `each_row` repeats per data row, `once` happens at the end.
 - If a control is a date or number input, its value must be in the form that control
   accepts (dates as YYYY-MM-DD), regardless of how it was displayed on screen.

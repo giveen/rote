@@ -1,0 +1,18 @@
+{
+  "name": "sauce",
+  "url": "https://www.saucedemo.com/",
+  "steps": [
+    {"action": "type", "target": "Username", "value": "standard_user"},
+    {"action": "type", "target": "Password", "value": "secret_sauce"},
+    {"action": "click", "target": "Login", "value": null},
+    {"action": "click", "target": "Add to cart", "value": null},
+    {"action": "click", "target": "Cart", "value": null},
+    {"action": "click", "target": "Checkout", "value": null},
+    {"action": "type", "target": "First Name", "value": "Ada"},
+    {"action": "type", "target": "Last Name", "value": "Lovelace"},
+    {"action": "type", "target": "Zip/Postal Code", "value": "94107"},
+    {"action": "click", "target": "Continue", "value": null},
+    {"action": "click", "target": "Finish", "value": null}
+  ],
+  "rows": [{"first_name": "Ada", "last_name": "Lovelace", "zip": "94107"}]
+}

@@ -1,7 +1,7 @@
 """Automation for Stockroom, written by rote from intake.mp4.
 
-Procedure: Log goods received against a purchase order on the Parts intake page by entering one or more part lines and submitting the intake.
-What success looks like: Each entered line appears as a row in the table below the form (SKU, Description, QTY, Unit cost, Supplier, Location) and the form resets to its placeholders; after submitting, a confirmation toast appears at the bottom right stating 'Intake submitted — 1 line recorded.'
+Procedure: Log goods received against a purchase order by adding parts intake lines and submitting the intake.
+What success looks like: Both entered lines appear in the intake table below the form with SKU, description, quantity, unit cost, supplier and location; the entry form is cleared to its placeholders and a confirmation toast appears at the bottom right saying Intake submitted.
 
 Data comes in through `rows`: one dict per repetition, keyed by `sku`, `description`, `quantity`, `unit_cost`, `supplier`, `location`.
 No model is involved in running this file.
@@ -30,6 +30,48 @@ def _button(page: Page, name: str):
     raise LookupError(f"no button named {name!r} on {page.url}")
 
 
+def _truthy(value) -> bool:
+    return str(value).strip().lower() in ("1", "true", "yes", "y", "on", "checked")
+
+
+def _tick(page: Page, label: str, want: bool, action: str) -> None:
+    control = _field(page, label)
+    (control.check if want else control.uncheck)()
+
+
+DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
+
+
+def _to_iso_date(value: str) -> str | None:
+    """Only formats with no ambiguity. 03/01/2026 is refused on purpose: it is either
+    March 1st or January 3rd, and silently picking one corrupts the user's data."""
+    from datetime import datetime
+    text = str(value).strip()
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def _fill(page: Page, label: str, value: str) -> None:
+    """Fill a control, giving a date input the form it actually accepts."""
+    control = _field(page, label)
+    kind = (control.get_attribute("type") or "text").lower()
+    text = "" if value is None else str(value)
+    if kind == "date":
+        iso = _to_iso_date(text)
+        if not iso:
+            raise ValueError(f"{label!r} is a date field; {text!r} is not an "
+                             f"unambiguous date. Give it YYYY-MM-DD.")
+        control.fill(iso)
+        if not control.input_value():
+            raise ValueError(f"the date field {label!r} rejected {iso!r}")
+        return
+    control.fill(text)
+
+
 def _select(page: Page, label: str, value: str) -> None:
     """Choose an option, and say which ones exist when the value is not among them."""
     control = _field(page, label)
@@ -53,10 +95,10 @@ def _key(row: dict, key: str) -> str:
 
 def _one(page: Page, row: dict[str, str]) -> None:
     """One repetition of the task."""
-    _field(page, "SKU").fill(row[_key(row, "sku")])
-    _field(page, "Description").fill(row[_key(row, "description")])
-    _field(page, "Quantity").fill(row[_key(row, "quantity")])
-    _field(page, "Unit cost").fill(row[_key(row, "unit_cost")])
+    _fill(page, "SKU", row[_key(row, "sku")])
+    _fill(page, "Description", row[_key(row, "description")])
+    _fill(page, "Quantity", row[_key(row, "quantity")])
+    _fill(page, "Unit cost", row[_key(row, "unit_cost")])
     _select(page, "Supplier", row[_key(row, "supplier")])
     _select(page, "Location", row[_key(row, "location")])
     _button(page, "Add line").click()
