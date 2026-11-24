@@ -17,5 +17,7 @@ jobs:
         run: |
           python -m venv .venv
           ./.venv/bin/pip install --quiet -r requirements.txt
+      - name: browsers
+        run: ./.venv/bin/playwright install --with-deps chromium
       - name: check
         run: ./check.sh

@@ -100,8 +100,13 @@ def cmd_learn(args: argparse.Namespace) -> int:
     # can be spent inventing explanations for a navigation failure.
     ok, why = reachable(args.url)
     if not ok:
-        print(f"refusing to learn: {args.url} did not answer ({why[:300]})")
-        print("  no model calls spent — check the app is running and the URL is right")
+        if why.startswith("browsers not installed:"):
+            print(f"refusing to learn: no Chromium browser is installed ({why[:300]})")
+            print("  no model calls spent — run ./.venv/bin/playwright install chromium "
+                  "and retry")
+        else:
+            print(f"refusing to learn: {args.url} did not answer ({why[:300]})")
+            print("  no model calls spent — check the app is running and the URL is right")
         return 2
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
