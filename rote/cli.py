@@ -19,6 +19,7 @@ from .record import intake_session, record, session_from_json, vendor_session
 from .replay import ReplayResult, replay
 from .repair import diff as plan_diff, repair
 from .synth import write_script
+from .trace import write as write_trace
 from .understand import understand
 
 DEFAULT_BUDGET = 10.0
@@ -41,7 +42,8 @@ def cmd_learn(args: argparse.Namespace) -> int:
         return 2
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    ledger = Ledger(budget=args.budget, path=out / "ledger.jsonl")
+    ledger = Ledger(budget=args.budget, path=out / "ledger.jsonl",
+                    trace_dir=out / "prompts")
     t0 = time.time()
 
     print(f"reading {video.name} ({video.stat().st_size / 1e3:.0f} KB)…")
@@ -99,6 +101,17 @@ def cmd_learn(args: argparse.Namespace) -> int:
           f"automation: {script}")
     print(f"report: {out / 'report.md'}")
     return 0 if result and result.passed else 1
+
+
+def cmd_trace(args: argparse.Namespace) -> int:
+    md, csv_path = write_trace(Path(args.ledger), Path(args.prompts), Path(args.out),
+                               title=args.title)
+    rows = sum(1 for line in Path(args.ledger).read_text().splitlines() if line.strip()) \
+        if Path(args.ledger).exists() else 0
+    print(f"{rows} calls traced")
+    print(f"  {md}")
+    print(f"  {csv_path}")
+    return 0
 
 
 def cmd_record(args: argparse.Namespace) -> int:
@@ -208,6 +221,13 @@ def main(argv: list[str] | None = None) -> int:
     rec.add_argument("--out", default="results/recordings")
     rec.add_argument("--headed", action="store_true")
     rec.set_defaults(func=cmd_record)
+
+    tr = sub.add_parser("trace", help="build the prompt and token trace from a ledger")
+    tr.add_argument("--ledger", default="results/learn/ledger.jsonl")
+    tr.add_argument("--prompts", default="results/learn/prompts")
+    tr.add_argument("--out", default="results/learn")
+    tr.add_argument("--title", default="Prompt and token trace")
+    tr.set_defaults(func=cmd_trace)
 
     args = p.parse_args(argv)
     return args.func(args)

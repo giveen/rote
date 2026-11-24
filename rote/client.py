@@ -61,12 +61,14 @@ class Call:
     seconds: float
     ok: bool
     note: str = ""
+    prompt_ref: str = ""  # file holding the exact request body that was sent
 
 
 @dataclass
 class Ledger:
     budget: float = 10.0
     path: Path | None = None
+    trace_dir: Path | None = None   # where the exact prompts are kept, for the audit trail
     calls: list[Call] = field(default_factory=list)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -77,6 +79,15 @@ class Ledger:
     @property
     def left(self) -> float:
         return self.budget - self.spent
+
+    def save_prompt(self, call: Call, body: dict) -> None:
+        """Keep the exact request, minus the credential, so the trace is auditable."""
+        if not self.trace_dir:
+            return
+        self.trace_dir.mkdir(parents=True, exist_ok=True)
+        name = f"{len(self.calls):03d}-{call.unit}-{call.purpose}.json".replace("/", "_")
+        (self.trace_dir / name).write_text(json.dumps(body, ensure_ascii=False, indent=1))
+        call.prompt_ref = name
 
     def record(self, call: Call) -> None:
         with self._lock:
@@ -147,14 +158,16 @@ def create(*, unit: str, purpose: str, input_: Any, ledger: Ledger,
                 break
             d = r.json()
             u = d.get("usage") or {}
-            ledger.record(Call(
+            call = Call(
                 unit=unit, purpose=purpose, effort=effort,
                 input_tokens=u.get("input_tokens") or 0,
                 cached_tokens=(u.get("input_tokens_details") or {}).get("cached_tokens") or 0,
                 output_tokens=u.get("output_tokens") or 0,
                 reasoning_tokens=(u.get("output_tokens_details") or {}).get("reasoning_tokens") or 0,
                 cost=cost_of(u), seconds=round(dt, 2), ok=d.get("status") != "failed",
-                note=note))
+                note=note)
+            ledger.save_prompt(call, body)      # exact request, credential excluded
+            ledger.record(call)
             return text_of(d)
         except Exception as e:
             err = f"{type(e).__name__}: {e}"

@@ -21,10 +21,12 @@ sys.exit(1 if bad else 0)
 EOF
 
 echo "== tests =="
-python3 -m unittest discover -s tests -q
+PY=./.venv/bin/python
+[ -x "$PY" ] || PY=python3
+"$PY" -m unittest discover -s tests -q
 
 echo "== imports =="
-python3 -c "import rote; print('  rote', rote.__version__)" 2>/dev/null || echo "  (package not importable yet)"
+"$PY" -c "import rote; print('  rote', rote.__version__)" 2>/dev/null || echo "  (package not importable yet)"
 
 echo "== node =="
 for f in $(find . -name '*.mjs' -not -path './node_modules/*' 2>/dev/null | head -20); do
