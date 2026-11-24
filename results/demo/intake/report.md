@@ -1,15 +1,15 @@
 # rote report — intake.mp4
 
 - **2 attempt(s)**, last replay **passed**
-- **$0.00705** over 2 model calls (4,910 in / 13,793 out, 71% cached)
-- wall time 35s
+- **$0.00214** over 2 model calls (4,932 in / 3,956 out, 71% cached)
+- wall time 19s
 - proof data: fresh — never in the recording
 
 ## What it understood
 
-**Goal.** Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting the intake.
+**Goal.** Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them
 
-**Success looks like.** The intake table lists each entered line with its SKU, description, quantity, unit cost, supplier and location, and an 'Intake submitted — 2 lines recorded.' confirmation appears at the bottom right.
+**Success looks like.** Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location; after submitting, a confirmation toast reads 'Intake submitted — 2 lines recorded.'
 
 | step | action | target | value | scope |
 |---|---|---|---|---|
@@ -53,11 +53,13 @@
 | check | result | detail |
 |---|---|---|
 | script runs on fresh data | ✅ | 2 row(s) through intake.py |
+| the loop completed one cycle per row | ✅ | 2 iterations, each ending on app.html |
 | every value was accepted by its control | ✅ | all 12 values were typed and confirmed on screen |
 | the values are visible on the final page | ✅ | all 12 values found |
 | the app reached the state the recording ended in | ✅ | matched the expected end state |
 | the app stored exactly the rows we sent | ✅ | 2/2 rows stored as sent |
 | the task was submitted | ✅ | 2 record(s) confirmed by the app |
+| the repeating block commits each row | ✅ | 1 committing step(s) inside steps 1–7 |
 
 After the replay: `proof_attempt2.png`
 
@@ -65,6 +67,7 @@ After the replay: `proof_attempt2.png`
 
 ### Attempt 1 — failed
 - ❌ the app stored exactly the rows we sent: sent 2 row(s), the app holds 1
+- ❌ the repeating block commits each row: steps 1–2 only enter data, with no click or submit, so 2 rows would overwrite the same form and produce one result instead of 2
 
 ### Attempt 2 — passed
 
@@ -72,8 +75,8 @@ After the replay: `proof_attempt2.png`
 
 | what | calls | tokens in | cached | tokens out | $ |
 |---|---|---|---|---|---|
-| intake | 1 | 2,812 | 2,748 | 1,744 | 0.00089 |
-| repair | 1 | 2,098 | 756 | 12,049 | 0.00616 |
+| intake | 1 | 2,812 | 2,748 | 1,993 | 0.00101 |
+| repair | 1 | 2,120 | 756 | 1,963 | 0.00112 |
 
 Raw per-call trace: `results/demo/intake/ledger.jsonl`
 

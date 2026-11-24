@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from rote.plan import PLAN_SCHEMA, Plan, Step, coverage
+from rote.plan import PLAN_SCHEMA, Plan, Step, coverage, row_keys
 
 
 def sample() -> dict:
@@ -75,6 +75,52 @@ class TestPlan(unittest.TestCase):
         p = Plan.from_dict(sample())
         expected = [Step("type", "SKU", "FLT-1180")]
         self.assertEqual(coverage(p, expected)["recall"], 0.0)
+
+
+class TestRepeatValidation(unittest.TestCase):
+    """An inverted or impossible repeat range is a model error to report, not a loop to
+    silently clamp into a different one (audit A9)."""
+
+    def with_repeat(self, repeat):
+        d = sample()
+        d["repeat"] = repeat
+        return Plan.from_dict(d)
+
+    def test_a_valid_range_is_kept(self):
+        p = self.with_repeat({"first": 2, "last": 4})
+        self.assertEqual(p.repeat, (2, 4))
+        self.assertIsNone(p.repeat_rejected)
+
+    def test_no_range_stays_no_range(self):
+        p = self.with_repeat(None)
+        self.assertIsNone(p.repeat)
+        self.assertIsNone(p.repeat_rejected)
+
+    def test_inverted_range_is_rejected_with_a_reason(self):
+        p = self.with_repeat({"first": 3, "last": 2})
+        self.assertIsNone(p.repeat)
+        self.assertIn("rejected", p.repeat_rejected)
+
+    def test_step_numbers_below_one_are_rejected(self):
+        for bad in ({"first": 0, "last": 2}, {"first": 1, "last": 0}, {"first": -1, "last": 3}):
+            p = self.with_repeat(bad)
+            self.assertIsNone(p.repeat, bad)
+            self.assertIn("rejected", p.repeat_rejected, bad)
+
+    def test_the_rejection_survives_a_roundtrip(self):
+        p = self.with_repeat({"first": 3, "last": 2})
+        again = Plan.from_json(json.dumps(p.to_dict()))
+        self.assertEqual(again.to_dict(), p.to_dict())
+
+
+class TestRowKeys(unittest.TestCase):
+    def test_row_keys_come_first_then_placeholders(self):
+        """The single key list (audit A10): row keys in first-seen order, then {step}
+        placeholders the rows never mentioned."""
+        p = Plan.from_dict(sample())
+        p.steps.append(Step("type", "Qty", "{qty}"))
+        p.rows.append({"sku": "FLT-1180", "qty": "3"})
+        self.assertEqual(row_keys(p), ["sku", "qty"])
 
 
 if __name__ == "__main__":

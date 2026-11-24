@@ -7,6 +7,7 @@ automation stay readable years later.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -112,11 +113,26 @@ class Plan:
     fields: list[dict[str, str]] = field(default_factory=list)
     expected_effect: str = ""
     repeat: tuple[int, int] | None = None   # 1-based, inclusive
+    repeat_rejected: str | None = None        # why an invalid repeat range was dropped
     cost: float = 0.0
     seconds: float = 0.0
 
     @classmethod
     def from_dict(cls, d: dict) -> "Plan":
+        repeat: tuple[int, int] | None = None
+        repeat_rejected: str | None = d.get("repeat_rejected")
+        raw_repeat = d.get("repeat")
+        if isinstance(raw_repeat, dict):
+            first = int(raw_repeat["first"])
+            last = int(raw_repeat["last"])
+            # An inverted or 1-based-impossible range is a model error, not something to
+            # silently clamp into a different loop: it is rejected and the reason kept.
+            if first < 1 or last < 1 or first > last:
+                repeat_rejected = (f"repeat steps {first}–{last} rejected: "
+                                   "step numbers start at 1 and first must be <= last")
+            else:
+                repeat = (first, last)
+                repeat_rejected = None
         return cls(
             app=d.get("app", ""),
             goal=d.get("goal", ""),
@@ -127,8 +143,8 @@ class Plan:
                   for row in d.get("rows", [])],
             fields=d.get("fields", []),
             expected_effect=d.get("expected_effect", ""),
-            repeat=(int(d["repeat"]["first"]), int(d["repeat"]["last"]))
-            if isinstance(d.get("repeat"), dict) else None,
+            repeat=repeat,
+            repeat_rejected=repeat_rejected,
         )
 
     @classmethod
@@ -145,6 +161,7 @@ class Plan:
                           for s in self.steps],
                 "repeat": ({"first": self.repeat[0], "last": self.repeat[1]}
                            if self.repeat else None),
+                "repeat_rejected": self.repeat_rejected,
                 "expected_effect": self.expected_effect}
 
     @property
@@ -154,6 +171,32 @@ class Plan:
 
 def _norm(s: str) -> str:
     return " ".join(str(s).split()).strip().lower()
+
+
+def _placeholder(step: Step) -> str | None:
+    """`{sku}` -> `sku`: the row key a step takes its value from."""
+    if not step.value:
+        return None
+    m = re.fullmatch(r"\{(\w+)\}", str(step.value).strip())
+    return m.group(1) if m else None
+
+
+def row_keys(plan: "Plan") -> list[str]:
+    """Every data key the plan speaks: row keys first, then {placeholders} in step order.
+
+    The one key list both the row aligner and the generated docstring read, so the two
+    can never disagree about which keys matter.
+    """
+    keys: list[str] = []
+    for row in plan.rows:
+        for k in row:
+            if k not in keys:
+                keys.append(k)
+    for step in plan.steps:
+        k = _placeholder(step)
+        if k and k not in keys:
+            keys.append(k)
+    return keys
 
 
 def coverage(plan: Plan, expected_steps: list[Step]) -> dict[str, Any]:

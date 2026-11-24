@@ -1,7 +1,7 @@
 """Automation for Stockroom, written by rote from intake.mp4.
 
-Procedure: Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting the intake.
-What success looks like: The intake table lists each entered line with its SKU, description, quantity, unit cost, supplier and location, and an 'Intake submitted — 2 lines recorded.' confirmation appears at the bottom right.
+Procedure: Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them
+What success looks like: Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location; after submitting, a confirmation toast reads 'Intake submitted — 2 lines recorded.'
 
 Data comes in through `rows`: one dict per repetition, keyed by `sku`, `description`, `quantity`, `unit_cost`, `supplier`, `location`.
 No model is involved in running this file.
@@ -12,16 +12,31 @@ from __future__ import annotations
 DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
 
 
+EVENTS: list = []
+
+
+def _mark(page, label: str) -> None:
+    """Record where an iteration ended, so "it looped three times" is observable rather than
+    assumed. An app that exposes no state still tells you which page it is on."""
+    try:
+        EVENTS.append((label, page.url))
+    except Exception:
+        pass
+
+
 def _first_present(candidates, timeout_ms: int = 4000):
     """The first candidate that actually shows up.
 
     Counting matches answers about this instant, which is wrong on any app that navigates:
-    the control arrives a moment later. Waiting per candidate keeps the label-first strategy
-    without turning a slow page into a failure.
+    the control arrives a moment later. timeout_ms is the whole budget for the lookup,
+    shared across candidates, so a failing step waits at most timeout_ms instead of one
+    timeout per candidate; the happy path still returns on the first candidate immediately.
     """
-    for loc in candidates:
+    cands = list(candidates)
+    per = max(600, timeout_ms // max(len(cands), 1)) if cands else timeout_ms
+    for loc in cands:
         try:
-            loc.first.wait_for(state="visible", timeout=timeout_ms)
+            loc.first.wait_for(state="visible", timeout=per)
             return loc.first
         except Exception:
             continue
@@ -136,6 +151,7 @@ def _one(page: Page, row: dict[str, str]) -> None:
     _select(page, "Supplier", row[_key(row, "supplier")])
     _select(page, "Location", row[_key(row, "location")])
     _button(page, "Add line").click()
+    _mark(page, "iteration")
 
 
 def run(page: Page, rows: list[dict[str, str]]) -> None:

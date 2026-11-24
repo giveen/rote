@@ -7,10 +7,9 @@ anyone can keep, review and run without rote or without a model at all.
 """
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
-from .plan import Plan, Step
+from .plan import Plan, Step, _placeholder, row_keys
 
 from .scriptenv import SCRIPT_ENV
 
@@ -39,14 +38,6 @@ def _py_str(s: str) -> str:
     return '"' + str(s).replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def _placeholder(step: Step) -> str | None:
-    """`{sku}` -> `sku`: the row key a step takes its value from."""
-    if not step.value:
-        return None
-    m = re.fullmatch(r"\{(\w+)\}", str(step.value).strip())
-    return m.group(1) if m else None
-
-
 def _line(step: Step, indent: str = "    ") -> str:
     key = _placeholder(step)
     if step.action == "type":
@@ -72,21 +63,6 @@ def _line(step: Step, indent: str = "    ") -> str:
     if step.action == "read":
         return f"{indent}pass  # read {_py_str(step.target)}"
     raise ValueError(f"unsupported action {step.action!r}")
-
-
-def _key_lookup(plan: Plan) -> str:
-    """Generated helper: accept rows keyed by `sku` or by the visible label `SKU`."""
-    return '''
-
-def _key(row: dict, key: str) -> str:
-    """Accept the row key in any casing, and the visible label as a fallback."""
-    if key in row:
-        return key
-    for candidate in (key.lower(), key.upper(), key.title(), key.replace("_", " ")):
-        if candidate in row:
-            return candidate
-    raise KeyError(f"row has no value for {key!r}: {sorted(row)}")
-'''
 
 
 def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
@@ -123,26 +99,13 @@ def compile_plan(plan: Plan, *, recording: str = "a recording") -> str:
         app=plan.app or "the app", recording=recording,
         goal=plan.goal or "(no goal recorded)",
         effect=plan.expected_effect or "(not stated)",
-        fields=", ".join(f"`{k}`" for k in _row_keys(plan)) or "the fields")
+        fields=", ".join(f"`{k}`" for k in row_keys(plan)) or "the fields")
 
     # Only the docstring is a template: the embedded script helpers contain braces of their
     # own, so they are concatenated, never formatted.
     parts = [doc, SCRIPT_ENV, "\n".join(body),
              FOOTER.format(setup=block(setup_steps), finish=block(finish_steps))]
     return "\n".join(parts)
-
-
-def _row_keys(plan: Plan) -> list[str]:
-    keys: list[str] = []
-    for row in plan.rows:
-        for k in row:
-            if k not in keys:
-                keys.append(k)
-    for s in plan.steps:
-        k = _placeholder(s)
-        if k and k not in keys:
-            keys.append(k)
-    return keys
 
 
 def write_script(plan: Plan, out: Path, *, recording: str = "a recording") -> Path:
