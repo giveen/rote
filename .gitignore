@@ -5,3 +5,4 @@ node_modules/
 **/raw/
 **/*.webm
 .DS_Store
+.venv
