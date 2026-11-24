@@ -1,15 +1,15 @@
 # rote report — vendors.mp4
 
 - **1 attempt(s)**, last replay **passed**
-- **$0.00126** over 1 model calls (1,820 in / 2,483 out, 95% cached)
-- wall time 9s
+- **$0.00224** over 1 model calls (1,820 in / 4,447 out, 95% cached)
+- wall time 15s
 - proof data: fresh — never in the recording
 
 ## What it understood
 
-**Goal.** Onboard and create a new vendor
+**Goal.** Create a new vendor on the New vendor form
 
-**Success looks like.** A banner reading 'Vendor created and welcome pack queued.' appears at the top of the New vendor form and the Created panel on the right lists the entered company name, country, contract start as 2026-03-01, annual spend, category, internal reference, notes, and welcome pack yes.
+**Success looks like.** A banner reading 'Vendor created and welcome pack queued.' appears, and the CREATED panel lists the new vendor's company name, country, contract start, annual spend, category, reference, notes, and welcome pack as yes.
 
 | step | action | target | value | scope |
 |---|---|---|---|---|
@@ -21,7 +21,7 @@
 | 6 | type | Internal reference | `{internal_reference}` | each_row |
 | 7 | type | Notes | `{notes}` | each_row |
 | 8 | check | Send welcome pack | `{send_welcome_pack}` | each_row |
-| 9 | click | Create vendor | `` | once |
+| 9 | click | Create vendor | `` | each_row |
 
 **Controls found:**
 `Company name` (text), `Country` (select), `Contract start` (text), `Annual spend` (number), `Category` (select), `Internal reference` (text), `Notes` (text), `Send welcome pack` (checkbox)
@@ -64,7 +64,7 @@ After the replay: `proof_attempt1.png`
 
 | what | calls | tokens in | cached | tokens out | $ |
 |---|---|---|---|---|---|
-| vendors | 1 | 1,820 | 1,724 | 2,483 | 0.00126 |
+| vendors | 1 | 1,820 | 1,724 | 4,447 | 0.00224 |
 
-Raw per-call trace: `results/submission/vendors/ledger.jsonl`
+Raw per-call trace: `results/demo/vendors/ledger.jsonl`
 

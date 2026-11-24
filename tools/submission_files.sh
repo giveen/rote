@@ -13,7 +13,8 @@ OUT=submission-upload
 rm -rf "$OUT"; mkdir -p "$OUT"
 
 # 1. The usage dashboard screenshot the form asks for.
-shot=$(ls -1 results/submission/usage-*.png 2>/dev/null | tail -1 || true)
+# Kept outside results/submission/ because that folder is rebuilt from a fresh run.
+shot=$(ls -1 results/usage/*.png results/submission/usage-*.png 2>/dev/null | tail -1 || true)
 if [ -n "$shot" ]; then
   cp "$shot" "$OUT/usage-dashboard.png"
   echo "usage screenshot   → $OUT/usage-dashboard.png ($(du -h "$shot" | cut -f1))"
@@ -54,7 +55,7 @@ The model's job is deliberately small. Muse Ember reads the recording and return
 fields, actions and one repeating range. A compiler turns that plan into ~70 lines of readable
 Playwright. Nothing about the running automation is AI: once proven, no model is called again.
 
-Three tasks across three apps cost 6 model calls and about three and a half cents.
+Four tasks across four apps cost 9 model calls and about two and a half cents.
 
 ## Describe your use of Meta products (3,000 max)
 

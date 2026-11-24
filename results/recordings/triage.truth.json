@@ -1,7 +1,7 @@
 {
   "name": "triage",
   "url": "http://127.0.0.1:8765/triage.html",
-  "seconds": 6.07,
+  "seconds": 6.03,
   "steps": [
     {
       "action": "type",

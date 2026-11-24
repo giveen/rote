@@ -2,7 +2,7 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/intake.mp4",
   "plan": {
     "app": "Stockroom",
-    "goal": "Log goods received against a purchase order on the Parts intake page by adding one intake line per item and submitting the intake.",
+    "goal": "Record received parts on the Parts intake page by adding one intake line per part and submitting the intake.",
     "fields": [
       {
         "control": "text",
@@ -98,21 +98,21 @@
         "action": "type",
         "target": "SKU",
         "value": "{sku}",
-        "note": "Enter the SKU code for the item being received.",
+        "note": "Enter the part SKU for this line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Description",
         "value": "{description}",
-        "note": "Enter the part description.",
+        "note": "Enter the part description for this line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Quantity",
         "value": "{quantity}",
-        "note": "Enter the quantity received.",
+        "note": "Enter how many were received.",
         "scope": "each_row"
       },
       {
@@ -126,38 +126,39 @@
         "action": "select",
         "target": "Supplier",
         "value": "{supplier}",
-        "note": "Choose the supplier from the dropdown.",
+        "note": "Choose the supplier for this line from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Location",
         "value": "{location}",
-        "note": "Choose the storage location from the dropdown.",
+        "note": "Choose the storage location for this line from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Add line",
         "value": null,
-        "note": "Adds the current form as a row in the table below and clears the form for the next line.",
+        "note": "Add the completed line to the table below; the entry form then clears for the next line.",
         "scope": "each_row"
       },
       {
         "action": "submit",
         "target": "Submit intake",
         "value": null,
-        "note": "Submit the intake after all lines have been added.",
+        "note": "Submit the intake once all lines have been added.",
         "scope": "once"
       }
     ],
     "repeat": {
-      "first": 0,
+      "first": 1,
       "last": 7
     },
-    "expected_effect": "Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location, and after submitting a green confirmation toast appears at the bottom right stating 'Intake submitted \u2014 2 line recorded.'"
+    "repeat_rejected": null,
+    "expected_effect": "The intake is submitted and a green confirmation toast appears at the bottom right reading 'Intake submitted \u2014 2 lines recorded.' The entered lines remain listed in the table below the form."
   },
-  "script": "results/submission/intake/intake.py",
+  "script": "results/demo/intake/intake.py",
   "attempts": [
     {
       "attempt": 0,
@@ -169,6 +170,11 @@
           "detail": "2 row(s) through intake.py"
         },
         {
+          "name": "the loop completed one cycle per row",
+          "ok": true,
+          "detail": "2 iterations, each ending on app.html"
+        },
+        {
           "name": "every value was accepted by its control",
           "ok": true,
           "detail": "all 12 values were typed and confirmed on screen"
@@ -192,57 +198,29 @@
           "name": "the task was submitted",
           "ok": true,
           "detail": "1 record(s) confirmed by the app"
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": false,
+          "detail": "steps 1\u20132 only enter data, with no click or submit, so 2 rows would overwrite the same form and produce one result instead of 2"
         }
       ],
       "error": null,
-      "cost": 0.0012743919999999998
+      "cost": 0.0012888919999999998
     },
     {
       "attempt": 1,
-      "passed": false,
-      "checks": [
-        {
-          "name": "script runs on fresh data",
-          "ok": true,
-          "detail": "2 row(s) through intake.py"
-        },
-        {
-          "name": "every value was accepted by its control",
-          "ok": true,
-          "detail": "all 12 values were typed and confirmed on screen"
-        },
-        {
-          "name": "the values are visible on the final page",
-          "ok": true,
-          "detail": "not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording"
-        },
-        {
-          "name": "the app reached the state the recording ended in",
-          "ok": true,
-          "detail": "matched the expected end state"
-        },
-        {
-          "name": "the app stored exactly the rows we sent",
-          "ok": false,
-          "detail": "sent 2 row(s), the app holds 1"
-        },
-        {
-          "name": "the task was submitted",
-          "ok": true,
-          "detail": "1 record(s) confirmed by the app"
-        }
-      ],
-      "error": null,
-      "cost": 0.015671716
-    },
-    {
-      "attempt": 2,
       "passed": true,
       "checks": [
         {
           "name": "script runs on fresh data",
           "ok": true,
           "detail": "2 row(s) through intake.py"
+        },
+        {
+          "name": "the loop completed one cycle per row",
+          "ok": true,
+          "detail": "2 iterations, each ending on app.html"
         },
         {
           "name": "every value was accepted by its control",
@@ -268,22 +246,27 @@
           "name": "the task was submitted",
           "ok": true,
           "detail": "2 record(s) confirmed by the app"
+        },
+        {
+          "name": "the repeating block commits each row",
+          "ok": true,
+          "detail": "1 committing step(s) inside steps 1\u20137"
         }
       ],
       "error": null,
-      "cost": 0.024765739999999998
+      "cost": 0.003898516
     }
   ],
   "passed": true,
   "ledger": {
-    "calls": 3,
-    "spent_usd": 0.024766,
-    "input_tokens": 7052,
-    "cached_tokens": 4260,
-    "output_tokens": 48939,
-    "reasoning_tokens": 46824,
-    "cache_hit_pct": 60.4
+    "calls": 2,
+    "spent_usd": 0.003899,
+    "input_tokens": 4974,
+    "cached_tokens": 3504,
+    "output_tokens": 7475,
+    "reasoning_tokens": 5987,
+    "cache_hit_pct": 70.4
   },
-  "elapsed_s": 109.0,
+  "elapsed_s": 19.2,
   "fresh_data": true
 }

@@ -1,7 +1,7 @@
 """Automation for Stockroom, written by rote from intake.mp4.
 
-Procedure: Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them
-What success looks like: Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location; after submitting, a confirmation toast reads 'Intake submitted — 2 lines recorded.'
+Procedure: Record received parts on the Parts intake page by adding one intake line per part and submitting the intake.
+What success looks like: The intake is submitted and a green confirmation toast appears at the bottom right reading 'Intake submitted — 2 lines recorded.' The entered lines remain listed in the table below the form.
 
 Data comes in through `rows`: one dict per repetition, keyed by `sku`, `description`, `quantity`, `unit_cost`, `supplier`, `location`.
 No model is involved in running this file.

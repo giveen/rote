@@ -1,7 +1,7 @@
 """Automation for VendorDesk, written by rote from vendors.mp4.
 
-Procedure: Onboard and create a new vendor
-What success looks like: A banner reading 'Vendor created and welcome pack queued.' appears at the top of the New vendor form and the Created panel on the right lists the entered company name, country, contract start as 2026-03-01, annual spend, category, internal reference, notes, and welcome pack yes.
+Procedure: Create a new vendor on the New vendor form
+What success looks like: A banner reading 'Vendor created and welcome pack queued.' appears, and the CREATED panel lists the new vendor's company name, country, contract start, annual spend, category, reference, notes, and welcome pack as yes.
 
 Data comes in through `rows`: one dict per repetition, keyed by `company_name`, `country`, `contract_start`, `annual_spend`, `category`, `internal_reference`, `notes`, `send_welcome_pack`.
 No model is involved in running this file.
@@ -12,16 +12,31 @@ from __future__ import annotations
 DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
 
 
+EVENTS: list = []
+
+
+def _mark(page, label: str) -> None:
+    """Record where an iteration ended, so "it looped three times" is observable rather than
+    assumed. An app that exposes no state still tells you which page it is on."""
+    try:
+        EVENTS.append((label, page.url))
+    except Exception:
+        pass
+
+
 def _first_present(candidates, timeout_ms: int = 4000):
     """The first candidate that actually shows up.
 
     Counting matches answers about this instant, which is wrong on any app that navigates:
-    the control arrives a moment later. Waiting per candidate keeps the label-first strategy
-    without turning a slow page into a failure.
+    the control arrives a moment later. timeout_ms is the whole budget for the lookup,
+    shared across candidates, so a failing step waits at most timeout_ms instead of one
+    timeout per candidate; the happy path still returns on the first candidate immediately.
     """
-    for loc in candidates:
+    cands = list(candidates)
+    per = max(600, timeout_ms // max(len(cands), 1)) if cands else timeout_ms
+    for loc in cands:
         try:
-            loc.first.wait_for(state="visible", timeout=timeout_ms)
+            loc.first.wait_for(state="visible", timeout=per)
             return loc.first
         except Exception:
             continue
@@ -130,6 +145,7 @@ def _key(row: dict, key: str) -> str:
 def _one(page: Page, row: dict[str, str]) -> None:
     """One repetition of the task."""
     _fill(page, "Company name", row[_key(row, "company_name")])
+    _mark(page, "iteration")
 
 
 def run(page: Page, rows: list[dict[str, str]]) -> None:

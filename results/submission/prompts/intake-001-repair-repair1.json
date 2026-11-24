@@ -1,0 +1,165 @@
+{
+ "model": "muse-ember-1.0",
+ "input": "WHAT HAS ALREADY BEEN TRIED — do not undo a change that fixed an earlier failure, and do not repeat one that did not help:\nattempt 1: checks failed\n\nTHE PLAN THAT FAILED\n```json\n{\n \"app\": \"Stockroom\",\n \"goal\": \"Record received parts on the Parts intake page by adding one intake line per part and submitting the intake.\",\n \"fields\": [\n  {\n   \"control\": \"text\",\n   \"example\": \"BRK-2041\",\n   \"label\": \"SKU\"\n  },\n  {\n   \"control\": \"text\",\n   \"example\": \"Brake pad set, front\",\n   \"label\": \"Description\"\n  },\n  {\n   \"control\": \"number\",\n   \"example\": \"12\",\n   \"label\": \"Quantity\"\n  },\n  {\n   \"control\": \"number\",\n   \"example\": \"18.40\",\n   \"label\": \"Unit cost\"\n  },\n  {\n   \"control\": \"select\",\n   \"example\": \"Northwind Supply\",\n   \"label\": \"Supplier\"\n  },\n  {\n   \"control\": \"select\",\n   \"example\": \"Aisle 4 · Bay 2\",\n   \"label\": \"Location\"\n  }\n ],\n \"rows\": [\n  {\n   \"cells\": [\n    {\n     \"field\": \"sku\",\n     \"value\": \"BRK-2041\"\n    },\n    {\n     \"field\": \"description\",\n     \"value\": \"Brake pad set, front\"\n    },\n    {\n     \"field\": \"quantity\",\n     \"value\": \"12\"\n    },\n    {\n     \"field\": \"unit_cost\",\n     \"value\": \"18.40\"\n    },\n    {\n     \"field\": \"supplier\",\n     \"value\": \"Northwind Supply\"\n    },\n    {\n     \"field\": \"location\",\n     \"value\": \"Aisle 4 · Bay 2\"\n    }\n   ]\n  },\n  {\n   \"cells\": [\n    {\n     \"field\": \"sku\",\n     \"value\": \"FLT-1180\"\n    },\n    {\n     \"field\": \"description\",\n     \"value\": \"Oil filter, spin-on\"\n    },\n    {\n     \"field\": \"quantity\",\n     \"value\": \"40\"\n    },\n    {\n     \"field\": \"unit_cost\",\n     \"value\": \"6.25\"\n    },\n    {\n     \"field\": \"supplier\",\n     \"value\": \"Bergen Parts\"\n    },\n    {\n     \"field\": \"location\",\n     \"value\": \"Aisle 7 · Bay 1\"\n    }\n   ]\n  }\n ],\n \"steps\": [\n  {\n   \"action\": \"type\",\n   \"target\": \"SKU\",\n   \"value\": \"{sku}\",\n   \"note\": \"Enter the part SKU for this line.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"type\",\n   \"target\": \"Description\",\n   \"value\": \"{description}\",\n   \"note\": \"Enter the part description for this line.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"type\",\n   \"target\": \"Quantity\",\n   \"value\": \"{quantity}\",\n   \"note\": \"Enter how many were received.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"type\",\n   \"target\": \"Unit cost\",\n   \"value\": \"{unit_cost}\",\n   \"note\": \"Enter the cost per unit.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"select\",\n   \"target\": \"Supplier\",\n   \"value\": \"{supplier}\",\n   \"note\": \"Choose the supplier for this line from the dropdown.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"select\",\n   \"target\": \"Location\",\n   \"value\": \"{location}\",\n   \"note\": \"Choose the storage location for this line from the dropdown.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"click\",\n   \"target\": \"Add line\",\n   \"value\": null,\n   \"note\": \"Add the completed line to the table below; the entry form then clears for the next line.\",\n   \"scope\": \"each_row\"\n  },\n  {\n   \"action\": \"submit\",\n   \"target\": \"Submit intake\",\n   \"value\": null,\n   \"note\": \"Submit the intake once all lines have been added.\",\n   \"scope\": \"once\"\n  }\n ],\n \"repeat\": {\n  \"first\": 1,\n  \"last\": 2\n },\n \"repeat_rejected\": null,\n \"expected_effect\": \"The intake is submitted and a green confirmation toast appears at the bottom right reading 'Intake submitted — 1 line recorded.' The entered lines remain listed in the table below the form.\"\n}\n```\n\nEVIDENCE FROM THE RUN\n```\nPASS script runs on fresh data: 2 row(s) through intake.py\nPASS the loop completed one cycle per row: 2 iterations, each ending on app.html\nPASS every value was accepted by its control: all 12 values were typed and confirmed on screen\nPASS the values are visible on the final page: not applicable: this app ends on a screen that does not echo the data, and the end state matches the recording\nPASS the app reached the state the recording ended in: matched the expected end state\nFAIL the app stored exactly the rows we sent: sent 2 row(s), the app holds 1\nPASS the task was submitted: 1 record(s) confirmed by the app\nFAIL the repeating block commits each row: steps 1–2 only enter data, with no click or submit, so 2 rows would overwrite the same form and produce one result instead of 2\nform controls actually on the page: SKU, Description, Quantity, Unit cost, Supplier, Location\nclickable things on the page, by their accessible name: \"Add line\" (button), \"Clear\" (button), \"Submit intake\" (button)\noptions in 'Supplier': Choose…, Northwind Supply, Acme Industrial, Bergen Parts\noptions in 'Location': Choose…, Aisle 4 · Bay 2, Aisle 7 · Bay 1, Overflow\npage text after the run:\n◈ Stockroom\nReceiving\nNorthwind Depot\nParts intake\n\nLog goods received against a purchase order.\n\nSKU\nDescription\nQuantity\nUnit cost\nSupplier\nChoose…\nNorthwind Supply\nAcme Industrial\nBergen Parts\nLocation\nChoose…\nAisle 4 · Bay 2\nAisle 7 · Bay 1\nOverflow\nAdd line\nClear\nSKU\tDESCRIPTION\tQTY\tUNIT COST\tSUPPLIER\tLOCATION\nSPK-0032\tSpark plug, iridium\t24\t$9.95\tBergen Parts\tOverflow\nSubmit intake\nIntake submitted — 1 line recorded.\n```",
+ "reasoning": {
+  "effort": "max"
+ },
+ "instructions": "You are correcting a plan for automating a web task, after the automation was run and did not succeed.\n\nYou get the plan, and the evidence from the failed run: the error, which values did not reach the page, and the app's real controls (labels, buttons and dropdown options) as the browser reported them.\n\nRules:\n- Change only what the evidence shows is wrong. Keep everything that already worked.\n- Name controls exactly as the app reports them. Do not invent labels or options.\n- If a dropdown rejected a value, the data was wrong for that app — keep the plan and say so in the step's note instead of changing the target.\n- Keep `rows` as they are: the values are the user's data, not something to edit.\n- Inside the `repeat` range, keep every `{field}` placeholder exactly as it is. Never\n  replace one with the literal text from the recording: the point of the automation is that\n  it takes different data.\n- Outside the `repeat` range, a literal value from the recording is correct: signing in and\n  navigating do not change per row. A `{placeholder}` outside the range demands data the user\n  has no reason to supply.\n- Keep `repeat` pointing at the steps that repeat per row. If the run failed because a row\n  was missing a value, the step probably sits outside the range and should not be asking for\n  data.\n- If a control is a date or number input, its value must be in the form that control\n  accepts (dates as YYYY-MM-DD), regardless of how it was displayed on screen.\n- If the evidence shows a control named with a count or a state (\"Cart, 1 item\",\n  \"Cart, empty\"), that name moves as the page changes: use only its stable part (\"Cart\").\n- A `navigate` step needs the URL in `value`; if you cannot supply one, drop the step. The\n  replay already opens the app before running.\n\nReturn the corrected plan as JSON matching the schema.",
+ "text": {
+  "format": {
+   "type": "json_schema",
+   "name": "plan",
+   "schema": {
+    "type": "object",
+    "properties": {
+     "app": {
+      "type": "string"
+     },
+     "goal": {
+      "type": "string"
+     },
+     "fields": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "label": {
+         "type": "string"
+        },
+        "control": {
+         "type": "string",
+         "enum": [
+          "text",
+          "number",
+          "select",
+          "checkbox",
+          "file"
+         ]
+        },
+        "example": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "label",
+        "control",
+        "example"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "steps": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "action": {
+         "type": "string",
+         "enum": [
+          "type",
+          "select",
+          "click",
+          "submit",
+          "navigate",
+          "read",
+          "check",
+          "uncheck"
+         ]
+        },
+        "target": {
+         "type": "string"
+        },
+        "value": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "note": {
+         "type": "string"
+        },
+        "scope": {
+         "type": "string",
+         "enum": [
+          "each_row",
+          "once"
+         ]
+        }
+       },
+       "required": [
+        "action",
+        "target",
+        "value",
+        "note",
+        "scope"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "rows": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "cells": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "field": {
+            "type": "string"
+           },
+           "value": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "field",
+           "value"
+          ],
+          "additionalProperties": false
+         }
+        }
+       },
+       "required": [
+        "cells"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "repeat": {
+      "type": "object",
+      "properties": {
+       "first": {
+        "type": "integer"
+       },
+       "last": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "first",
+       "last"
+      ],
+      "additionalProperties": false
+     },
+     "expected_effect": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "app",
+     "goal",
+     "fields",
+     "steps",
+     "rows",
+     "repeat",
+     "expected_effect"
+    ],
+    "additionalProperties": false
+   },
+   "strict": true
+  }
+ },
+ "prompt_cache_key": "rote-repair-v1"
+}

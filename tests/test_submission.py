@@ -45,8 +45,11 @@ class TestSubmissionBundle(unittest.TestCase):
         self.assertEqual(len(data["events"]), len(source["events"]))
 
     def test_usage_screenshot_is_picked_up(self):
+        """Kept in results/usage/ so rebuilding the bundle cannot silently lose it."""
+        source = list((ROOT / "results" / "usage").glob("*.png"))
+        self.assertTrue(source, "no usage screenshot in results/usage/ — capture one on Dec 2")
         shot = OUT / "usage-dashboard.png"
-        self.assertTrue(shot.exists(), "no usage screenshot copied into the bundle")
+        self.assertTrue(shot.exists(), "the bundle did not pick the screenshot up")
         self.assertLess(shot.stat().st_size, 10 * 1024 * 1024)
 
 

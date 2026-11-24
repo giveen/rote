@@ -66,10 +66,10 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <main class="wrap">
 <header>
 <h1>Stockroom</h1>
-<p class="goal">Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them</p>
+<p class="goal">Record received parts on the Parts intake page by adding one intake line per part and submitting the intake.</p>
 <span class="badge badge-passed">PASSED</span>
 </header>
-<p class="cost">Spent $0.00214 · 2 model calls · 71.0% cache hit</p>
+<p class="cost">Spent $0.00390 · 2 model calls · 70.4% cache hit</p>
 <section>
 <h2>What it learned</h2>
 <div class="table-wrap">
@@ -111,8 +111,8 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <h2>Generated automation</h2>
 <pre>&quot;&quot;&quot;Automation for Stockroom, written by rote from intake.mp4.
 
-Procedure: Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them
-What success looks like: Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location; after submitting, a confirmation toast reads &#x27;Intake submitted — 2 lines recorded.&#x27;
+Procedure: Record received parts on the Parts intake page by adding one intake line per part and submitting the intake.
+What success looks like: The intake is submitted and a green confirmation toast appears at the bottom right reading &#x27;Intake submitted — 2 lines recorded.&#x27; The entered lines remain listed in the table below the form.
 
 Data comes in through `rows`: one dict per repetition, keyed by `sku`, `description`, `quantity`, `unit_cost`, `supplier`, `location`.
 No model is involved in running this file.

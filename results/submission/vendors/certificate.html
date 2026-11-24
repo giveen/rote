@@ -66,10 +66,10 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <main class="wrap">
 <header>
 <h1>VendorDesk</h1>
-<p class="goal">Onboard and create a new vendor</p>
+<p class="goal">Create a new vendor on the New vendor form</p>
 <span class="badge badge-passed">PASSED</span>
 </header>
-<p class="cost">Spent $0.00126 · 1 model calls · 94.7% cache hit</p>
+<p class="cost">Spent $0.00224 · 1 model calls · 94.7% cache hit</p>
 <section>
 <h2>What it learned</h2>
 <div class="table-wrap">
@@ -84,7 +84,7 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <tr><td>type</td><td>Internal reference</td><td>{internal_reference}</td><td>each_row</td></tr>
 <tr><td>type</td><td>Notes</td><td>{notes}</td><td>each_row</td></tr>
 <tr><td>check</td><td>Send welcome pack</td><td>{send_welcome_pack}</td><td>each_row</td></tr>
-<tr><td>click</td><td>Create vendor</td><td></td><td>once</td></tr>
+<tr><td>click</td><td>Create vendor</td><td></td><td>each_row</td></tr>
 </tbody>
 </table>
 </div>
@@ -110,8 +110,8 @@ footer { border-top: 1px solid #30363d; padding-top: 14px; color: #8b949e; font-
 <h2>Generated automation</h2>
 <pre>&quot;&quot;&quot;Automation for VendorDesk, written by rote from vendors.mp4.
 
-Procedure: Onboard and create a new vendor
-What success looks like: A banner reading &#x27;Vendor created and welcome pack queued.&#x27; appears at the top of the New vendor form and the Created panel on the right lists the entered company name, country, contract start as 2026-03-01, annual spend, category, internal reference, notes, and welcome pack yes.
+Procedure: Create a new vendor on the New vendor form
+What success looks like: A banner reading &#x27;Vendor created and welcome pack queued.&#x27; appears, and the CREATED panel lists the new vendor&#x27;s company name, country, contract start, annual spend, category, reference, notes, and welcome pack as yes.
 
 Data comes in through `rows`: one dict per repetition, keyed by `company_name`, `country`, `contract_start`, `annual_spend`, `category`, `internal_reference`, `notes`, `send_welcome_pack`.
 No model is involved in running this file.
@@ -122,16 +122,31 @@ from __future__ import annotations
 DATE_FORMATS = (&quot;%Y-%m-%d&quot;, &quot;%Y/%m/%d&quot;, &quot;%d %b %Y&quot;, &quot;%d %B %Y&quot;, &quot;%b %d, %Y&quot;, &quot;%B %d, %Y&quot;)
 
 
+EVENTS: list = []
+
+
+def _mark(page, label: str) -&gt; None:
+    &quot;&quot;&quot;Record where an iteration ended, so &quot;it looped three times&quot; is observable rather than
+    assumed. An app that exposes no state still tells you which page it is on.&quot;&quot;&quot;
+    try:
+        EVENTS.append((label, page.url))
+    except Exception:
+        pass
+
+
 def _first_present(candidates, timeout_ms: int = 4000):
     &quot;&quot;&quot;The first candidate that actually shows up.
 
     Counting matches answers about this instant, which is wrong on any app that navigates:
-    the control arrives a moment later. Waiting per candidate keeps the label-first strategy
-    without turning a slow page into a failure.
+    the control arrives a moment later. timeout_ms is the whole budget for the lookup,
+    shared across candidates, so a failing step waits at most timeout_ms instead of one
+    timeout per candidate; the happy path still returns on the first candidate immediately.
     &quot;&quot;&quot;
-    for loc in candidates:
+    cands = list(candidates)
+    per = max(600, timeout_ms // max(len(cands), 1)) if cands else timeout_ms
+    for loc in cands:
         try:
-            loc.first.wait_for(state=&quot;visible&quot;, timeout=timeout_ms)
+            loc.first.wait_for(state=&quot;visible&quot;, timeout=per)
             return loc.first
         except Exception:
             continue
@@ -240,6 +255,7 @@ def _key(row: dict, key: str) -&gt; str:
 def _one(page: Page, row: dict[str, str]) -&gt; None:
     &quot;&quot;&quot;One repetition of the task.&quot;&quot;&quot;
     _fill(page, &quot;Company name&quot;, row[_key(row, &quot;company_name&quot;)])
+    _mark(page, &quot;iteration&quot;)
 
 
 def run(page: Page, rows: list[dict[str, str]]) -&gt; None:

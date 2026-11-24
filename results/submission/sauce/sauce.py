@@ -1,9 +1,9 @@
 """Automation for Swag Labs, written by rote from sauce.mp4.
 
-Procedure: Log in, add the Sauce Labs Backpack to the cart, and proceed through checkout to the order overview page.
-What success looks like: The Checkout: Overview page is shown listing Sauce Labs Backpack ($29.99), Payment Information: SauceCard #31337, Shipping Information: Free Pony Express Delivery, and Price Total: $32.39 (Item total: $29.99, Tax: $2.40, Total: $32.39), with Cancel and Finish buttons visible.
+Procedure: Log in as standard_user, add Sauce Labs Backpack to the cart, checkout with the entered name and zip code, and complete the order.
+What success looks like: After the final row's Finish shows Checkout: Complete with 'Thank you for your order!', Back Home returns to the Swag Labs inventory page showing Sauce Labs Backpack ($29.99) and other products, with an empty cart, ready for the next row; each order before returning home is complete with Price Total $32.39, Payment Information SauceCard #31337, and Shipping Information Free Pony Express Delivery!.
 
-Data comes in through `rows`: one dict per repetition, keyed by `first_name`, `last_name`, `zip_postal_code`.
+Data comes in through `rows`: one dict per repetition, keyed by `username`, `password`, `first_name`, `last_name`, `zip_postal_code`.
 No model is involved in running this file.
 """
 
@@ -12,16 +12,31 @@ from __future__ import annotations
 DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y")
 
 
+EVENTS: list = []
+
+
+def _mark(page, label: str) -> None:
+    """Record where an iteration ended, so "it looped three times" is observable rather than
+    assumed. An app that exposes no state still tells you which page it is on."""
+    try:
+        EVENTS.append((label, page.url))
+    except Exception:
+        pass
+
+
 def _first_present(candidates, timeout_ms: int = 4000):
     """The first candidate that actually shows up.
 
     Counting matches answers about this instant, which is wrong on any app that navigates:
-    the control arrives a moment later. Waiting per candidate keeps the label-first strategy
-    without turning a slow page into a failure.
+    the control arrives a moment later. timeout_ms is the whole budget for the lookup,
+    shared across candidates, so a failing step waits at most timeout_ms instead of one
+    timeout per candidate; the happy path still returns on the first candidate immediately.
     """
-    for loc in candidates:
+    cands = list(candidates)
+    per = max(600, timeout_ms // max(len(cands), 1)) if cands else timeout_ms
+    for loc in cands:
         try:
-            loc.first.wait_for(state="visible", timeout=timeout_ms)
+            loc.first.wait_for(state="visible", timeout=per)
             return loc.first
         except Exception:
             continue
@@ -129,11 +144,16 @@ def _key(row: dict, key: str) -> str:
 
 def _one(page: Page, row: dict[str, str]) -> None:
     """One repetition of the task."""
+    _button(page, "Add to cart").click()
+    _button(page, "Cart").click()
+    _button(page, "Checkout").click()
     _fill(page, "First Name", row[_key(row, "first_name")])
     _fill(page, "Last Name", row[_key(row, "last_name")])
     _fill(page, "Zip/Postal Code", row[_key(row, "zip_postal_code")])
     _button(page, "Continue").click()
-    pass  # read "Checkout: Overview"
+    _button(page, "Finish").click()
+    _button(page, "Back Home").click()
+    _mark(page, "iteration")
 
 
 def run(page: Page, rows: list[dict[str, str]]) -> None:
@@ -142,9 +162,6 @@ def run(page: Page, rows: list[dict[str, str]]) -> None:
     _fill(page, "Username", "standard_user")
     _fill(page, "Password", "secret_sauce")
     _button(page, "Login").click()
-    _button(page, "Add to cart").click()
-    _button(page, "Cart").click()
-    _button(page, "Checkout").click()
     for row in rows:
         _one(page, row)
     pass

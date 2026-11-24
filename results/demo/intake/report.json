@@ -1,8 +1,8 @@
 {
-  "video": "/mnt/storage/Projects/rote-audit/results/recordings/intake.mp4",
+  "video": "/mnt/storage/Projects/rote/results/recordings/intake.mp4",
   "plan": {
     "app": "Stockroom",
-    "goal": "Log goods received against a purchase order on the Parts intake page by adding intake lines and submitting them",
+    "goal": "Record received parts on the Parts intake page by adding one intake line per part and submitting the intake.",
     "fields": [
       {
         "control": "text",
@@ -98,56 +98,56 @@
         "action": "type",
         "target": "SKU",
         "value": "{sku}",
-        "note": "",
+        "note": "Enter the part SKU for this line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Description",
         "value": "{description}",
-        "note": "",
+        "note": "Enter the part description for this line.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Quantity",
         "value": "{quantity}",
-        "note": "",
+        "note": "Enter how many were received.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Unit cost",
         "value": "{unit_cost}",
-        "note": "",
+        "note": "Enter the cost per unit.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Supplier",
         "value": "{supplier}",
-        "note": "Dropdown initially showing 'Choose\u2026'",
+        "note": "Choose the supplier for this line from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Location",
         "value": "{location}",
-        "note": "Dropdown initially showing 'Choose\u2026'",
+        "note": "Choose the storage location for this line from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Add line",
         "value": null,
-        "note": "Adds the line to the table below and clears the form for the next line",
+        "note": "Add the completed line to the table below; the entry form then clears for the next line.",
         "scope": "each_row"
       },
       {
         "action": "submit",
         "target": "Submit intake",
         "value": null,
-        "note": "",
+        "note": "Submit the intake once all lines have been added.",
         "scope": "once"
       }
     ],
@@ -156,7 +156,7 @@
       "last": 7
     },
     "repeat_rejected": null,
-    "expected_effect": "Each added line appears in the table below the form with its SKU, description, quantity, unit cost, supplier and location; after submitting, a confirmation toast reads 'Intake submitted \u2014 2 lines recorded.'"
+    "expected_effect": "The intake is submitted and a green confirmation toast appears at the bottom right reading 'Intake submitted \u2014 2 lines recorded.' The entered lines remain listed in the table below the form."
   },
   "script": "results/demo/intake/intake.py",
   "attempts": [
@@ -206,7 +206,7 @@
         }
       ],
       "error": null,
-      "cost": 0.001013892
+      "cost": 0.0012888919999999998
     },
     {
       "attempt": 1,
@@ -254,19 +254,19 @@
         }
       ],
       "error": null,
-      "cost": 0.002134816
+      "cost": 0.003898516
     }
   ],
   "passed": true,
   "ledger": {
     "calls": 2,
-    "spent_usd": 0.002135,
-    "input_tokens": 4932,
+    "spent_usd": 0.003899,
+    "input_tokens": 4974,
     "cached_tokens": 3504,
-    "output_tokens": 3956,
-    "reasoning_tokens": 2721,
-    "cache_hit_pct": 71.0
+    "output_tokens": 7475,
+    "reasoning_tokens": 5987,
+    "cache_hit_pct": 70.4
   },
-  "elapsed_s": 19.0,
+  "elapsed_s": 19.2,
   "fresh_data": true
 }

@@ -63,12 +63,12 @@ serve
 case "${1:-all}" in
   intake)  run intake  http://127.0.0.1:8765/app.html     results/fresh_rows.json ;;
   vendors) run vendors http://127.0.0.1:8765/vendors.html results/vendor_fresh.json ;;
-  sauce)   run sauce   https://www.saucedemo.com/         results/sauce_fresh.json ;;
+  sauce)   run sauce   https://www.saucedemo.com/         results/sauce_multi.json ;;
   triage)  run triage  http://127.0.0.1:8765/triage.html  results/triage_multi.json ;;
   all)
     run intake  http://127.0.0.1:8765/app.html     results/fresh_rows.json
     run vendors http://127.0.0.1:8765/vendors.html results/vendor_fresh.json
-    run sauce   https://www.saucedemo.com/         results/sauce_fresh.json
+    run sauce   https://www.saucedemo.com/         results/sauce_multi.json
     run triage  http://127.0.0.1:8765/triage.html  results/triage_multi.json
     ;;
   *) echo "usage: $0 [all|intake|vendors|sauce]" >&2; exit 2 ;;

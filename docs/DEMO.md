@@ -137,9 +137,9 @@ really is that fast, and saying so is better than pretending it is slow.
 
 | number | value | source |
 |---|---|---|
-| cost, three tasks | $0.035592 | `results/submission/trace.md` |
-| model calls | 6 | same |
-| input / cached | 12,829 / 8,464 tokens | same |
+| cost, four tasks | $0.026179 | `results/submission/trace.md` |
+| model calls | 9 | same |
+| input / cached | 19,826 / 9,976 tokens | same |
 | spread across runs | $0.0098 – $0.0356 | git history, `results/submission/` |
 | one recording read | ~$0.001 | `results/submission/*/report.json` |
 | video input length-independence | ~169 tokens | `results/gate/video_tokens.py` |

@@ -53,23 +53,24 @@ flowchart LR
 
 ## Measured, not claimed
 
-Three tasks, three different apps, fresh data that never appeared in any recording:
+Four tasks, four different apps, fresh data that never appeared in any recording:
 
 | task | app | attempts | model calls | cost | verdict |
 |---|---|---|---|---|---|
-| Parts intake, two lines | Stockroom (ours) | fail, fail, pass | 3 | $0.02477 | 6/6 checks |
-| New vendor, checkbox + date | VendorDesk (ours) | pass | 1 | $0.00126 | 6/6 checks |
-| Checkout with login | saucedemo.com (not ours) | fail, pass | 2 | $0.00957 | 4/4 checks |
-| **total** | | | **6** | **$0.0356** | 3/3 passed |
+| Parts intake, two lines | Stockroom (ours) | fail, pass | 2 | $0.00390 | 8/8 checks |
+| New vendor, checkbox + date | VendorDesk (ours) | pass | 1 | $0.00224 | 6/6 checks |
+| Checkout × 3 rows | saucedemo.com (not ours) | fail, fail, pass | 3 | $0.00775 | 6/6 checks |
+| Triage two tickets | HelpDesk (ours) | fail, fail, pass | 3 | $0.01229 | 8/8 checks |
+| **total** | | | **9** | **$0.0262** | 4/4 passed |
 
-Reading three recordings, writing three automations and replaying them all costs **a few cents**.
+Reading four recordings, writing four automations and replaying them all costs **a couple of cents**.
 Evidence lives in `results/submission/`: `report.md` per task, `certificate.html` per task, and
 `trace.md` with every call's tokens and cost.
 
-The spread is the honest part: the same three tasks have cost between **$0.0098 and $0.0356**
-across runs, because the first plan is sometimes right and sometimes needs repair. The numbers
-above are the committed run; a cheaper one is described in the git history. Paying for a repair
-is still cheaper than a person doing the task twice.
+The spread is the honest part: the same work has cost between **$0.0098 and $0.0356** across
+runs, because the first plan is sometimes right and sometimes needs repair. The numbers above are
+the committed run in `results/submission/`. Paying for a repair is still cheaper than a person
+doing the task twice.
 
 ## What it refuses to do
 
@@ -92,7 +93,9 @@ Honesty is a feature when the alternative is silent corruption:
   their stable part; the instructions say so, and the repair evidence shows the real names.
 - The repeating block is one contiguous range. A task whose data entry is interleaved with
   unrelated navigation in several places is beyond the current plan model.
-- Proof on saucedemo was one row. Fresh *values*, not fresh *row counts*.
+- The saucedemo proof runs three rows and returns to the shop between them; each iteration adds
+  an item and completes its own checkout, which the report shows as three cycles ending on
+  `inventory.html`.
 
 ## Layout
 

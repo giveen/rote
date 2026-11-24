@@ -2,7 +2,7 @@
   "video": "/mnt/storage/Projects/rote/results/recordings/vendors.mp4",
   "plan": {
     "app": "VendorDesk",
-    "goal": "Onboard and create a new vendor",
+    "goal": "Create a new vendor on the New vendor form",
     "fields": [
       {
         "control": "text",
@@ -88,73 +88,74 @@
         "action": "type",
         "target": "Company name",
         "value": "{company_name}",
-        "note": "",
+        "note": "Enter the supplier company name on the New vendor form.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Country",
         "value": "{country}",
-        "note": "",
+        "note": "Select the supplier's country from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Contract start",
         "value": "{contract_start}",
-        "note": "Date input displays mm/dd/yyyy placeholder; entered in that format.",
+        "note": "Enter the contract start date in mm/dd/yyyy format as shown by the placeholder.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Annual spend",
         "value": "{annual_spend}",
-        "note": "Entered as a plain number without commas or decimals.",
+        "note": "Enter the annual spend amount as a number.",
         "scope": "each_row"
       },
       {
         "action": "select",
         "target": "Category",
         "value": "{category}",
-        "note": "",
+        "note": "Select the vendor category from the dropdown.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Internal reference",
         "value": "{internal_reference}",
-        "note": "",
+        "note": "The recording shows VD-2041 in this field before submission; enter the internal reference supplied for the new vendor.",
         "scope": "each_row"
       },
       {
         "action": "type",
         "target": "Notes",
         "value": "{notes}",
-        "note": "",
+        "note": "Enter any buyer notes in the large text area.",
         "scope": "each_row"
       },
       {
         "action": "check",
         "target": "Send welcome pack",
         "value": "{send_welcome_pack}",
-        "note": "",
+        "note": "Check the box to queue the welcome pack for this vendor.",
         "scope": "each_row"
       },
       {
         "action": "click",
         "target": "Create vendor",
         "value": null,
-        "note": "",
-        "scope": "once"
+        "note": "Click Create vendor to submit the form and end the task.",
+        "scope": "each_row"
       }
     ],
     "repeat": {
       "first": 1,
       "last": 1
     },
-    "expected_effect": "A banner reading 'Vendor created and welcome pack queued.' appears at the top of the New vendor form and the Created panel on the right lists the entered company name, country, contract start as 2026-03-01, annual spend, category, internal reference, notes, and welcome pack yes."
+    "repeat_rejected": null,
+    "expected_effect": "A banner reading 'Vendor created and welcome pack queued.' appears, and the CREATED panel lists the new vendor's company name, country, contract start, annual spend, category, reference, notes, and welcome pack as yes."
   },
-  "script": "results/submission/vendors/vendors.py",
+  "script": "results/demo/vendors/vendors.py",
   "attempts": [
     {
       "attempt": 0,
@@ -192,19 +193,19 @@
         }
       ],
       "error": null,
-      "cost": 0.001257996
+      "cost": 0.0022399959999999997
     }
   ],
   "passed": true,
   "ledger": {
     "calls": 1,
-    "spent_usd": 0.001258,
+    "spent_usd": 0.00224,
     "input_tokens": 1820,
     "cached_tokens": 1724,
-    "output_tokens": 2483,
-    "reasoning_tokens": 1936,
+    "output_tokens": 4447,
+    "reasoning_tokens": 3651,
     "cache_hit_pct": 94.7
   },
-  "elapsed_s": 9.0,
+  "elapsed_s": 15.5,
   "fresh_data": true
 }
