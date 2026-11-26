@@ -1,0 +1,7 @@
+{"version": 2, "width": 104, "height": 26, "timestamp": 1795666391, "env": {"SHELL": "/bin/bash", "TERM": null}}
+[0.50564, "o", "reading intake.mp4 (79 KB)…\r\n"]
+[11.206311, "o", "  Log goods received in Parts intake by entering one or more parts lines, adding each line to the intake table, and submitting the intake.\r\n  6 controls, 2 example row(s), 8 steps · $0.00127\r\n"]
+[12.058284, "o", "  attempt 1: failed (checks failed) → repairing the plan\r\n"]
+[30.45339, "o", "    expected_effect changed\r\n"]
+[31.406374, "o", "  attempt 2: replay passed with fresh data\r\n"]
+[31.40656, "o", "\r\n2 model calls · $0.00605 spent · 70% cached · 31s\r\nPASSED · automation: /tmp/film-run/intake.py\r\nreport: /tmp/film-run/report.md\r\n"]
