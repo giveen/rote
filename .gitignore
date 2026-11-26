@@ -7,3 +7,5 @@ node_modules/
 .DS_Store
 .venv
 submission-upload/
+results/video/*.mp4
+results/video/parts/
