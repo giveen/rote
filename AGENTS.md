@@ -7,7 +7,8 @@ for the state of the hackathon entry.
 ## Before you change anything
 
 ```
-./check.sh
+./.venv/bin/python -m rote doctor   # is this machine able to run anything at all?
+./check.sh                          # the project's check, before and after your change
 ```
 
 That is the project's check: it compiles every module, runs the unittest suite, and validates the

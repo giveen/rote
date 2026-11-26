@@ -27,6 +27,7 @@ checklist
 | Muse pinned the dependencies against drift | `prompts/pin-dependencies.md` + `prompts/pin-deps-trajectory.json.gz`; `tests/test_requirements.py` fails on any open range | done |
 | CI failures resolved | `prompts/fix-ci-browsers.md`; a missing Chromium is no longer reported as a dead app, browser tests skip in a fresh clone, and CI installs Chromium | done |
 | Browser download cached in CI | `.github/workflows/check.yml` keyed on `requirements.lock.txt`; cold run 36 s, cache-hit run 35 s with the download step skipped, versus 8m15s before | done |
+| The failing take, found by running the demo until one failed | `results/broll/failing-take/` (intake: 2 of 2 takes failed on a check, passed on attempt 2) — found by running it myself, since it needed several real takes and a judgement about what reads on screen | done |
 | Demo footage re-recorded after the fixes | `results/broll/`: sauce (3 rows) and triage (2 tickets) at real speed, paced and half-speed, listed with timings in `docs/DEMO.md` | done |
 | Commit convention recording each prompt | `AGENTS.md`, `PROMPTS.md`, `tools/commit.sh`; 47/47 commits carry a `Prompt to Muse:` line | done |
 | 3-minute demo video | not recorded — `docs/DEMO.md` is the shot list | **yours** |
